@@ -1,0 +1,120 @@
+/* CSS RESET */
+
+* { border: 0; border-spacing: 0; margin: 0; outline: 0; padding: 0; }
+A { text-decoration: none;}
+
+/* DISPLAY */
+
+HTML, BODY {
+	background: #eee;
+		background: -moz-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%, rgba(206,206,206,1) 100%);
+		background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(55%,rgba(244,244,244,1)), color-stop(100%,rgba(206,206,206,1)));
+		background: -webkit-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%);
+		background: -o-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%);
+		background: -ms-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%);
+		background: radial-gradient(ellipse at center,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f4f4f4', endColorstr='#cecece',GradientType=1 );
+	width: 100%; height: 100%; overflow: hidden; }
+
+#display { position: relative; }
+.displayEdges { bottom: 0; opacity: 0.9; position: absolute; top: 0; width: 35px; z-index: 50; }
+#edgeLeft { background: url(images/edges.png) repeat-y 0 0; left: 0; }
+#edgeRight { background: url(images/edges.png) repeat-y -35px 0; right: 0; }
+.day {
+	background: #fff;
+	border: 1px solid #bbb;
+	box-shadow: rgba(0, 0, 0, 0.25) 0 0 23x 0px;
+		-moz-box-shadow: rgba(0, 0, 0, 0.25) 0 0 3px 0px;
+		-webkit-box-shadow: rgba(0, 0, 0, 0.25) 0 0 3px 0px;
+	border-radius: 3px;
+		-moz-border-radius: 3px;
+		-webkit-border-radius: 3px;
+	padding: 40px 0 35px;
+	position: absolute;
+	top: 80px;
+	width: 250px;
+}
+
+/* PANEL */
+
+#panel { background: url(images/panel.png) repeat-x; height: 30px; position: absolute; width: 100%; z-index: 100; }
+#panel UL { display: inline-block; list-style: none; height: 25px; border-right: 2px solid #222; }
+#panel UL LI { display: inline-block; }
+#panel UL LI A { display: inline-block; padding: 6px 20px 0; height: 21px; color: white; font: bold 13px "Arial"; text-shadow: black 1px 1px 1px; border-left: 2px solid #222; border-right: 1px solid rgba(255,255,255,0.15); text-decoration: none; }
+#panel UL LI A:hover { background: rgba(0,0,0,0.15); }
+#panel UL LI A.active { background: #222 !important; }
+#panel .icon { position: relative; padding-left: 37px; }
+#panel .icon SPAN { display: block; position: absolute; top: 5px; left: 14px; width: 17px; height: 17px; }
+#panel .icon.schedules SPAN { background: url(images/menu-schedules.png) no-repeat; }
+#panel .icon.library SPAN { background: url(images/menu-library.png) no-repeat; }
+#panel #user { float: right; display: inline-block; height: 25px; border-left: 1px solid rgba(255,255,255,0.15); }
+#panel #user A.user { display: inline-block; position: relative; padding: 6px 42px 0 37px; height: 21px; color: #ffc; font: bold 13px "Arial"; text-shadow: black 1px 1px 1px; border-left: 2px solid #222; text-decoration: none; }
+#panel #user A.user:hover { background: rgba(0,0,0,0.15); }
+#panel #user A.user.active { background: #222 !important; }
+#panel #user A.user SPAN.pic { display: block; position: absolute; top: 6px; left: 15px; width: 16px; height: 16px; background: url(images/user-icon.png) no-repeat; }
+#panel #user A.user SPAN.sub { display: block; position: absolute; top: 6px; right: 12px; width: 16px; height: 16px; background: url(images/user-sub.png) no-repeat; }
+
+
+#vklogin {
+	background: url(images/vklogin.png) no-repeat 0 0;
+	display: inline-block;
+	height: 21px;
+	position: absolute;
+	right: 12px;
+	top: 3px;
+	width: 127px;
+}
+
+#vklogin:hover {
+	background: url(images/vklogin.png) no-repeat 0 -21px;
+}
+
+/* BLOCKS */
+
+.dayCaption {
+	background: rgb(72,76,80);
+		background: -moz-linear-gradient(top, rgba(72,76,80,1) 0%, rgba(53,56,59,1) 92%, rgba(52,55,58,1) 96%, rgba(46,48,50,1) 100%);
+		background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,rgba(72,76,80,1)), color-stop(92%,rgba(53,56,59,1)), color-stop(96%,rgba(52,55,58,1)), color-stop(100%,rgba(46,48,50,1)));
+		background: -webkit-linear-gradient(top,rgba(72,76,80,1) 0%,rgba(53,56,59,1) 92%,rgba(52,55,58,1) 96%,rgba(46,48,50,1) 100%);
+		background: -o-linear-gradient(top,rgba(72,76,80,1) 0%,rgba(53,56,59,1) 92%,rgba(52,55,58,1) 96%,rgba(46,48,50,1) 100%);
+		background: -ms-linear-gradient(top,rgba(72,76,80,1) 0%,rgba(53,56,59,1) 92%,rgba(52,55,58,1) 96%,rgba(46,48,50,1) 100%);
+		background: linear-gradient(to bottom,rgba(72,76,80,1) 0%,rgba(53,56,59,1) 92%,rgba(52,55,58,1) 96%,rgba(46,48,50,1) 100%);
+		filter: progid:DXImageTransform.Microsoft.gradient(startColorstr='#484c50',endColorstr='#2e3032',GradientType=0);
+	border-top-left-radius: 4px;
+	border-top-right-radius: 4px;
+		-webkit-border-top-left-radius: 4px;
+		-webkit-border-top-right-radius: 4px;
+		-moz-border-radius-topleft: 4px;
+		-moz-border-radius-topright: 4px;
+	box-shadow: 0 1px 3px rgba(50,50,50,0.41);
+		-webkit-box-shadow: 0 1px 3px rgba(50,50,50,0.41);
+		-moz-box-shadow: 0 1px 3px rgba(50,50,50,0.41);
+	color: #89C7FF;
+	font: bold 15px "Arial";
+	height: 28px;
+	left: -1px;
+	padding: 8px 0 0 15px;
+	position: absolute;
+	right: -1px;
+	text-shadow: black 1px 1px 1px;
+	top: -1px;
+	z-index: 2;
+}
+
+.dayCaption:before { position: absolute; z-index: 3; top: 0; left: 0; width: 63px; height: 35px; background: rgba(0,0,0,0.35); content: ''; border-right: 1px solid #222; -moz-border-top-left-radius: 3px;
+-webkit-border-top-left-radius: 3px; border-top-left-radius: 3px; }
+.dayCaption.today:before { background: rgba(248,179,0,0.35);  }
+.dayCaption .date { color: #FFF07E; position: relative; z-index: 4; }
+.dayCaption .dayName { margin-left: 20px; }
+
+.lesson { position: relative; height: 55px; padding: 10px 15px 10px 20px; border-bottom: 1px solid #d8d8d8; }
+.lesson.l2, .lesson.l4 { border-top: 1px solid #f1f1f1; background: #f2f2f2; }
+.lesson:before { position: absolute; top: 5px; bottom: 5px; left: 5px; width: 4px; content: ''; }
+.lesson.lection:before { background: #FFB564; }
+.lesson.lab:before { background: #77E977; }
+.lesson.practice:before { background: #88ADF1; }
+.lesson.empty:before { background: #d1d1d1; }
+.lesson .caption { font: bold 17px "Times New Roman"; }
+.lesson .place { position: relative; padding-left: 19px; font: 13px "Arial"; }
+.lesson .place:before { position: absolute; z-index: 4; top: -1px; left: 0; width: 18px; height: 18px; background: url(images/place.png) no-repeat; content: ''; }
+.lesson .place A { text-decoration: none; border-bottom: 1px dashed #525C7A; color: #525C7A; }
