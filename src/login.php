@@ -1,9 +1,14 @@
 <?php
 
+	$host = 'host';
+	$client_id = 'client_id';
+	$client_secret = 'client_secret';
+	$group_id = 'group_id';
+
 	if(isset($_GET['code'])) {
 
 		/* Запрос token */
-		$ch = curl_init('https://oauth.vk.com/access_token?client_id=4099924&client_secret=8wkIisOzZTlpYwGPkaRf&code='.$_GET['code'].'&redirect_uri=http://va32kpi.ru/login.php');
+		$ch = curl_init("https://oauth.vk.com/access_token?client_id=$client_id&client_secret=$client_secret&code=".$_GET['code']."&redirect_uri=$host/login.php");
 		curl_setopt($ch, CURLOPT_HEADER, 0);
 		curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 		$answer = curl_exec($ch);
@@ -14,7 +19,7 @@
 		if(isset($result->access_token)) {
 
 			/* Состоит ли пользователь в группе доступа */
-			$ch = curl_init("https://api.vk.com/method/groups.isMember?gid=57799683&access_token=$result->access_token");
+			$ch = curl_init("https://api.vk.com/method/groups.isMember?gid=$group_id&access_token=$result->access_token");
 			curl_setopt($ch, CURLOPT_HEADER, 0);
 			curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 			$answer = curl_exec($ch);
