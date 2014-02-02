@@ -14,12 +14,16 @@ HTML, BODY {
 		background: -ms-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%);
 		background: radial-gradient(ellipse at center,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%);
 		filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f4f4f4', endColorstr='#cecece',GradientType=1 );
-	width: 100%; height: 100%; overflow: hidden; }
+	width: 100%; height: 100%; overflow-x: hidden; overflow-y: auto; }
 
 #display { position: relative; }
 .displayEdges { bottom: 0; opacity: 0.9; position: absolute; top: 0; width: 35px; z-index: 50; }
+.displayEdges DIV { height: 44px; position: absolute; top: 180px; width: 33px; opacity: 0.85; }
+.displayEdges:hover DIV { opacity: 1; }
 #edgeLeft { background: url(images/edges.png) repeat-y 0 0; left: 0; }
+#stepPrev { background: url(images/steps.png) 0 0;  left: 8px; }
 #edgeRight { background: url(images/edges.png) repeat-y -35px 0; right: 0; }
+#stepNext { background: url(images/steps.png) -33px 0; right: 8px; }
 .day {
 	background: #fff;
 	border: 1px solid #bbb;

@@ -19,13 +19,18 @@
 			$subjects[$subject['id']] = $subject;
 		}
 
-		if ($_POST['query'] == 'init') {
+		/* Определяем какой формат подачи блоков ожидается */
+		$data_query = explode(',', $_POST['query'], 3);
+		if ($data_query[0] == 'init') {
 			$data['timepunk'] = 'init';
+
+			$data['first'] = find_edgedates('first');
+			$data['last'] = find_edgedates('last');
 
 			$query = "SELECT * FROM `schedules` WHERE `date` < DATE(NOW()) ORDER BY `date` DESC LIMIT 0,1";
 			$data1 = database_query($query);
 			if ($block = mysql_fetch_assoc($data1)) {
-				$blocks[] = make_block($block,-1);
+				$blocks[] = make_block($block, -1);
 			}
 
 			$i = 0;
@@ -33,7 +38,25 @@
 			$query = "SELECT * FROM `schedules` WHERE `date` >= DATE(NOW()) ORDER BY `date` ASC LIMIT 0,$limit";
 			$data1 = database_query($query);
 			while ($block = mysql_fetch_assoc($data1)) {
-				$blocks[] = make_block($block,$i++);
+				$blocks[] = make_block($block, $i++);
+			}
+		}
+		else if ($data_query[0] == 'next') {
+			$data['timepunk'] = 'next';
+
+			$query = "SELECT * FROM `schedules` WHERE `date` > '".$data_query[1]."' ORDER BY `date` ASC LIMIT 0,1";
+			$data1 = database_query($query);
+			if ($block = mysql_fetch_assoc($data1)) {
+				$blocks[] = make_block($block, $data_query[2]);
+			}
+		}
+		else if ($data_query[0] == 'prev') {
+			$data['timepunk'] = 'prev';
+
+			$query = "SELECT * FROM `schedules` WHERE `date` < '".$data_query[1]."' ORDER BY `date` DESC LIMIT 0,1";
+			$data1 = database_query($query);
+			if ($block = mysql_fetch_assoc($data1)) {
+				$blocks[] = make_block($block, $data_query[2]);
 			}
 		}
 
@@ -59,7 +82,7 @@
 	}
 
 	/* Создание блока */
-	function make_block($block,$queue) {
+	function make_block($block, $queue) {
 
 		/* Подготовка данных */
 		$date = explode('-', $block['date']);
@@ -82,5 +105,16 @@
 			         'date' => $block['date'],
 			         'short_date' => $date[2].'.'.$date[1],
 			         'data' => decode_block_data($block['data']));
+	}
+
+	function find_edgedates($direction) {
+		if ($direction == 'first') $order = 'ASC';
+		else if ($direction == 'last') $order = 'DESC';
+
+		$query = "SELECT `date` FROM `schedules` ORDER BY `date` $order LIMIT 0,1";
+		$data1 = database_query($query);
+		if ($block = mysql_fetch_assoc($data1)) {
+			return $block['date'];
+		} else return '-';
 	}
 ?>
