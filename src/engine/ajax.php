@@ -20,7 +20,7 @@
 		}
 
 		/* Определяем какой формат подачи блоков ожидается */
-		$data_query = explode(',', $_POST['query'], 3);
+		$data_query = explode(',', $_POST['query']);
 		if ($data_query[0] == 'init') {
 			$data['timepunk'] = 'init';
 
@@ -57,6 +57,17 @@
 			$data1 = database_query($query);
 			if ($block = mysql_fetch_assoc($data1)) {
 				$blocks[] = make_block($block, $data_query[2]);
+			}
+		}
+		else if ($data_query[0] == 'add') {
+			$data['timepunk'] = 'add';
+
+			$i = ($data_query[2]+1);
+			$limit = ($_POST['capacity']-$data_query[3])+1;
+			$query = "SELECT * FROM `schedules` WHERE `date` > '".$data_query[1]."' ORDER BY `date` ASC LIMIT 0,$limit";
+			$data1 = database_query($query);
+			while ($block = mysql_fetch_assoc($data1)) {
+				$blocks[] = make_block($block, $i++);
 			}
 		}
 

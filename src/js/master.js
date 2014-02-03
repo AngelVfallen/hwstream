@@ -60,6 +60,10 @@ function buildBlocks(raw_data) {
 		display.blocks.forEach(function(block) { block.queue++; });
 		display.blocks = data.blocks.concat(display.blocks);
 	}
+	else if(data.timepunk == 'add') {
+		var start = display.blocks.length;
+		display.blocks = display.blocks.concat(data.blocks);
+	}
 
 	/* Формат анимации загруженных блоков */
 	switch (data.timepunk) {
@@ -68,7 +72,7 @@ function buildBlocks(raw_data) {
 		case 'prev':   stepAnimate('prev'); break; // Предыдущий набор блоков
 		case 'future': jumpAnimate('front'); break; // Прыжок вперёд
 		case 'past':   jumpAnimate('behind'); break; // Прыжок назад
-		case 'add':    break; // Догрузка в случае появления свободного места
+		case 'add':    addAnimate(start); break; // Догрузка в случае появления свободного места
 	}
 
 	/* Корректируем состояние управляющих элементов */
@@ -144,6 +148,35 @@ function jumpAnimate(direction) { }
 /* Догрузить блоки, если после изменения размера появилось пустующее место */
 function resizeDisplay() {
 	calculateDisplayCapacity();
+	if (display.blocks.length > display.capacity) {
+		for (var i = (display.capacity+1); i < display.blocks.length; i++) {
+			$(display.blocks[i].element).remove();
+		};
+		display.blocks.splice(display.capacity+1, (display.blocks.length-1)-display.capacity);
+	}
+	else if ((display.blocks.length-1) < display.capacity) {
+		if (display.blocks[display.blocks.length-1].date != display.last) {
+			var last = display.blocks[display.blocks.length-1];
+			if (!display.busy) loadBlocks('add,'+last.date+','+last.queue+','+(display.blocks.length));
+		}
+	}
+}
+
+function addAnimate(start) {
+	console.log(start);
+	for (var i = start; i < display.blocks.length; i++) {
+		var block = display.blocks[i];
+		console.log(block);
+		var element = makeBlockElement(block);
+    	$('#display').append(element);
+
+    	/* Передаём ссылку на элемент в дисплей */
+    	block.element = element;
+
+    	/* Анимация появления блока */
+    	$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
+    		animate({ 'opacity': 1, 'left': (display.margin_left+((display.block_width+display.block_margin)*block.queue))+'px' }, 500);
+	}
 }
 
 /* Определить максимальное количество блоков на дисплее */
