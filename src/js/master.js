@@ -44,14 +44,14 @@ function buildBlocks(raw_data) {
 		display.first = data.first;
 		display.last = data.last;
 	}
-	else if(data.timepunk == 'next') {
+	else if (data.timepunk == 'next') {
 		$(display.blocks[0].element).remove();
 		display.blocks.splice(0, 1);
 		display.blocks.forEach(function(block) { block.queue--; });
 		display.blocks = display.blocks.concat(data.blocks);
 	}
-	else if(data.timepunk == 'prev') {
-		if(!((display.blocks[display.blocks.length-1].date == display.last) &&
+	else if (data.timepunk == 'prev') {
+		if (!((display.blocks[display.blocks.length-1].date == display.last) &&
 		   ((display.blocks[display.blocks.length-1].queue+1)) < display.capacity))
 		{
 			$(display.blocks[display.blocks.length-1].element).remove();
@@ -60,7 +60,7 @@ function buildBlocks(raw_data) {
 		display.blocks.forEach(function(block) { block.queue++; });
 		display.blocks = data.blocks.concat(display.blocks);
 	}
-	else if(data.timepunk == 'add') {
+	else if (data.timepunk == 'add') {
 		var start = display.blocks.length;
 		display.blocks = display.blocks.concat(data.blocks);
 	}
@@ -85,7 +85,7 @@ function buildBlocks(raw_data) {
 /* Генерация кода и создание блока */
 function makeBlockElement(block) {
 	var element = $('<div class="day"><div class="dayCaption '+block.tags+'"><span class="date">'+block.short_date+'</span>&nbsp;<span class="dayName">'+block.day+'</span></div><div class="schedule"></div></div>');
-	block.data.forEach(function(subject) {
+	block.data.forEach(function(subject) { // Предметы
 		$(element).find('.schedule').append('<div class="lesson l'+subject.queue+' '+subject.type+'"><p class="caption">'+subject.caption+'</p><p class="place"><a href="#">'+subject.place+'</a></p></div>');
 	});
 	return element;
@@ -94,11 +94,11 @@ function makeBlockElement(block) {
 /* Переход на один шаг */
 function loadStep(direction) {
 	if (!display.busy) {
-		if (direction == 'next') {
+		if (direction == 'next') { // Вперёд
 			var last = display.blocks[display.blocks.length-1];
 			loadBlocks('next,'+last.date+','+last.queue);
 		}
-		else if (direction == 'prev') {
+		else if (direction == 'prev') { // Назад
 			var first = display.blocks[0];
 			loadBlocks('prev,'+first.date+','+first.queue);
 		}
@@ -124,14 +124,16 @@ function initAnimate() {
 
 /* Анимация пролистывания блоков */
 function stepAnimate(direction) {
-	if (direction == 'next') {
+
+	/* Добавление элемента блока на экран и связывание его с объектом */
+	if (direction == 'next') { // Шаг вперёд
 		var block = display.blocks[display.blocks.length-1];
 		var element = makeBlockElement(block).
 			css({ 'opacity': '1', 'left': (display.margin_left+((display.block_width+display.block_margin)*((block.queue*1)+1)))+'px' });
 		$('#display').append(element);
 		block.element = element;
 	}
-	else if (direction == 'prev') {
+	else if (direction == 'prev') { // Шаг назад
 		var block = display.blocks[0];
 		var element = makeBlockElement(block).
 			css({ 'opacity': '1', 'left': (display.margin_left+((display.block_width+display.block_margin)*((block.queue*1)-1)))+'px' });
@@ -139,41 +141,55 @@ function stepAnimate(direction) {
 		block.element = element;
 	}
 
+	/* Общая анимация скольжения в заданную сторону */
 	$(display.blocks).each(function() {
 		$(this.element).stop().animate({'left': (display.margin_left+((display.block_width+display.block_margin)*(this.queue*1)))+'px'}, 500);
 	});
 }
+
+/* Анимация прыжка к заданной дате */
 function jumpAnimate(direction) { }
 
 /* Догрузить блоки, если после изменения размера появилось пустующее место */
 function resizeDisplay() {
+
+	/* Проверяем, сколько теперь доступно места */
 	calculateDisplayCapacity();
-	if (display.blocks.length > display.capacity) {
+
+	/* Если у нас ёмкость дисплея не соответствует наполнению */
+	if (display.blocks.length > display.capacity) { // Блоков стало слишком много
 		for (var i = (display.capacity+1); i < display.blocks.length; i++) {
-			$(display.blocks[i].element).remove();
+			$(display.blocks[i].element).remove(); // Удаляем все лишние элементы
 		};
+
+		/* Обрезаем часть блоков, оставшуюся без элементов */
 		display.blocks.splice(display.capacity+1, (display.blocks.length-1)-display.capacity);
 	}
-	else if ((display.blocks.length-1) < display.capacity) {
+	else if ((display.blocks.length-1) < display.capacity) { // Появилось свободное место на экране
+
+		/* Если мы не дошли до конца ленты - запрашиваем подкрепление */
 		if (display.blocks[display.blocks.length-1].date != display.last) {
+
+			/* Если дисплей доступен, делаем запрос на следующие за последним блоки */
 			var last = display.blocks[display.blocks.length-1];
 			if (!display.busy) loadBlocks('add,'+last.date+','+last.queue+','+(display.blocks.length));
 		}
 	}
 }
 
+/* Анимация догрузки блоков в случае появления свободного пространства */
 function addAnimate(start) {
-	console.log(start);
+
+	/* Перебираем все новоприбывшие блоки */
 	for (var i = start; i < display.blocks.length; i++) {
 		var block = display.blocks[i];
-		console.log(block);
 		var element = makeBlockElement(block);
     	$('#display').append(element);
 
     	/* Передаём ссылку на элемент в дисплей */
     	block.element = element;
 
-    	/* Анимация появления блока */
+    	/* Анимация добавления блока */
     	$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
     		animate({ 'opacity': 1, 'left': (display.margin_left+((display.block_width+display.block_margin)*block.queue))+'px' }, 500);
 	}
@@ -186,33 +202,45 @@ function calculateDisplayCapacity() {
 	display.capacity = Math.ceil(workspace/size)+1;
 }
 
+/* Управление системой пошаговой навигации */
 function correctNavigation() {
+
+	/* Если в дисплее уже есть какие-нибудь блоки */
 	if (display.blocks.length > 0) {
 
+		/* Отображаем края, которые являются кнопками для пошаговой навигации */
 		$('.displayEdges').stop().fadeIn(100);
 
+		/* Если последний блок в дисплее - не последний в ленте, то по клику переход к следующему */
 		if (display.blocks[display.blocks.length-1].date != display.last) {
-			$('#edgeRight').click(null).click(function() {
-				loadStep('next');
+			$('#edgeRight').unbind('click').click(function() {
+				loadStep('next'); // Следующий блок
 			});
-		} else {
-			if((display.blocks[display.blocks.length-1].queue+2) >= display.capacity) {
+		} else { // Если мы добрались до конца ленты
+
+			/* Если последний блок загружен, но находится за краем экрана */
+			if ((display.blocks[display.blocks.length-1].queue+2) >= display.capacity) {
 				$('#edgeRight').unbind('click').click(function() {
+
+					/* Сдвигаем все блоки так, чтобы открылся последний блок */
 					slideRightEdge();
 					$('#edgeLeft').unbind('click').click(unslideEdge);
-					$('#edgeRight').stop().fadeOut(100);
+					$('#edgeRight').stop().fadeOut(100); // Прячем кнопку перехода, раз грузить нечего
 				});
-			} else {
+			} else { // Если последний блок загружен и виден - кнопка загрузки следующего нам ни к чему
 				$('#edgeRight').stop().fadeOut(100);
 			}
 		}
 
+		/* Если первый блок в дисплее - не первый в ленте, то по клику переход к предыдущему */
 		if (display.blocks[0].date != display.first) {
 			$('#edgeLeft').click(null).click(function() {
-				loadStep('prev');
+				loadStep('prev'); // Предыдущий блок
 			});
-		} else {
+		} else { // Если мы добрались до начала ленты
 			$('#edgeLeft').unbind('click').click(function() {
+
+				/* Сдвигаем блоки так, чтобы открылся первый */
 				slideLeftEdge();
 				$('#edgeRight').unbind('click').click(unslideEdge);
 				$('#edgeLeft').stop().fadeOut(100);
@@ -221,17 +249,23 @@ function correctNavigation() {
 	}
 }
 
+/* Скольжение до правого края, чтобы показать последний блок */
 function slideRightEdge() {
+
+	/* Сдвигаем блоки влево так, чтобы показать аккурат последний блок */
 	var left = parseInt($(display.blocks[display.blocks.length-1].element).css('left'));
 	var delta = left - ($('#display').width()-(display.margin_left+display.block_width));
 	$('#display .day').each(function() {
 		var now = parseInt($(this).css('left'));
 		$(this).stop().animate({ 'left': (now-delta)+'px' }, 500);
-		display.edged = -delta;
+		display.edged = -delta; // Сохраняем расстояние для восстановления исходного состояния
 	});
 }
 
+/* Скольжение до левого края, чтобы показать первый блок */
 function slideLeftEdge() {
+
+	/* Сдвигаем блоки вправо так, чтобы показать блок, который обычно за левым краем */
 	var left = parseInt($(display.blocks[0].element).css('left'));
 	var delta = display.margin_left-left;
 	$('#display .day').each(function() {
@@ -241,11 +275,16 @@ function slideLeftEdge() {
 	});
 }
 
+/* Возвращаемся к обычной системе пошагового перехода */
 function unslideEdge() {
+
+	/* Сдвигаем все блоки на то расстояние, на которое их отодвинул краевой слайдер */
 	$('#display .day').each(function() {
 		var now = parseInt($(this).css('left'));
 		$(this).stop().animate({ 'left': (now-display.edged)+'px' }, 500);
 	});
+
+	/* Возвращение к обычному состоянию */
 	display.edged = 0;
 	correctNavigation();
 }

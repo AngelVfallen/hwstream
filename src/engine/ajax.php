@@ -22,17 +22,22 @@
 		/* Определяем какой формат подачи блоков ожидается */
 		$data_query = explode(',', $_POST['query']);
 		if ($data_query[0] == 'init') {
+
+			/* Первая загрузка */
 			$data['timepunk'] = 'init';
 
+			/* Передаём "края" ленты */
 			$data['first'] = find_edgedates('first');
 			$data['last'] = find_edgedates('last');
 
+			/* Передаём один устаревший блок */
 			$query = "SELECT * FROM `schedules` WHERE `date` < DATE(NOW()) ORDER BY `date` DESC LIMIT 0,1";
 			$data1 = database_query($query);
 			if ($block = mysql_fetch_assoc($data1)) {
 				$blocks[] = make_block($block, -1);
 			}
 
+			/* Передаём актуальные блоки на всю ёмкость экрана */
 			$i = 0;
 			$limit = $_POST['capacity'];
 			$query = "SELECT * FROM `schedules` WHERE `date` >= DATE(NOW()) ORDER BY `date` ASC LIMIT 0,$limit";
@@ -42,8 +47,11 @@
 			}
 		}
 		else if ($data_query[0] == 'next') {
+
+			/* Следующий блок */
 			$data['timepunk'] = 'next';
 
+			/* Передаём следующий блок */
 			$query = "SELECT * FROM `schedules` WHERE `date` > '".$data_query[1]."' ORDER BY `date` ASC LIMIT 0,1";
 			$data1 = database_query($query);
 			if ($block = mysql_fetch_assoc($data1)) {
@@ -51,8 +59,11 @@
 			}
 		}
 		else if ($data_query[0] == 'prev') {
+
+			/* Предыдущий блок */
 			$data['timepunk'] = 'prev';
 
+			/* Передаём предыдущий блок */
 			$query = "SELECT * FROM `schedules` WHERE `date` < '".$data_query[1]."' ORDER BY `date` DESC LIMIT 0,1";
 			$data1 = database_query($query);
 			if ($block = mysql_fetch_assoc($data1)) {
@@ -60,8 +71,11 @@
 			}
 		}
 		else if ($data_query[0] == 'add') {
+
+			/* Догрузка блоков в случае появления свободного места */
 			$data['timepunk'] = 'add';
 
+			/* Передаём дополнительные блоки, начиная со следующего после отображённого, на всё свободное место */
 			$i = ($data_query[2]+1);
 			$limit = ($_POST['capacity']-$data_query[3])+1;
 			$query = "SELECT * FROM `schedules` WHERE `date` > '".$data_query[1]."' ORDER BY `date` ASC LIMIT 0,$limit";
@@ -71,6 +85,7 @@
 			}
 		}
 
+		/* Упаковываем всё в JSON и отправляем клиенту */
 		$data['blocks'] = $blocks;
 		echo json_encode($data);
 	}
@@ -118,9 +133,10 @@
 			         'data' => decode_block_data($block['data']));
 	}
 
+	/* Вычисление "краёв" ленты */
 	function find_edgedates($direction) {
-		if ($direction == 'first') $order = 'ASC';
-		else if ($direction == 'last') $order = 'DESC';
+		if ($direction == 'first') $order = 'ASC'; // От наименьшего
+		else if ($direction == 'last') $order = 'DESC'; // От наибольшего
 
 		$query = "SELECT `date` FROM `schedules` ORDER BY `date` $order LIMIT 0,1";
 		$data1 = database_query($query);
