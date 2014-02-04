@@ -87,6 +87,18 @@ function makeBlockElement(block) {
 	var element = $('<div class="day"><div class="dayCaption '+block.tags+'"><span class="date">'+block.short_date+'</span>&nbsp;<span class="dayName">'+block.day+'</span></div><div class="schedule"></div></div>');
 	block.data.forEach(function(subject) { // Предметы
 		$(element).find('.schedule').append('<div class="lesson l'+subject.queue+' '+subject.type+'"><p class="caption">'+subject.caption+'</p><p class="place"><a href="#">'+subject.place+'</a></p></div>');
+		if (subject.comments.length > 0) { // Комментарии
+			var important = false;
+			$(element).find('.l'+subject.queue).append('<div class="comments">'+subject.comments.length+'</div>');
+
+			/* Ищем важные комментарии */
+			subject.comments.forEach(function(comment) {
+				if (comment.important > 0) important = true;
+			});
+
+			/* Если лента комментариев содержит что-то важное - стоит сделать посветку */
+			if (important) $(element).find('.l'+subject.queue).addClass('important');
+		}
 	});
 	return element;
 }

@@ -93,20 +93,6 @@
 	/* Завершаем работу с базой данных */
 	database_disconnect();
 
-	/* Расшифровка данных блока */
-	function decode_block_data($raw_data) {
-		$data = array();
-		$subjects = $GLOBALS['subjects'];
-		$i = 1;
-		foreach (explode(',', $raw_data) as $id) {
-			$data[] = array('queue' => $i++,
-				            'caption' => $subjects[$id]['caption'],
-				            'type' => $subjects[$id]['type'],
-				            'place' => $subjects[$id]['place'],);
-		}
-		return $data;
-	}
-
 	/* Создание блока */
 	function make_block($block, $queue) {
 
@@ -131,6 +117,57 @@
 			         'date' => $block['date'],
 			         'short_date' => $date[2].'.'.$date[1],
 			         'data' => decode_block_data($block['data']));
+	}
+
+	/* Расшифровка данных блока */
+	function decode_block_data($raw_data) {
+		$data = array();
+
+		$subjects = $GLOBALS['subjects'];
+		$i = 1;
+		foreach (explode(';', $raw_data) as $subject) {
+			$subject_data = explode(':', $subject, 2);
+			$subject_info = $subjects[$subject_data[0]];
+			if (isset($subject_data[1])) $comments = $subject_data[1];
+			else $comments = '';
+
+			$data[] = array('queue' => $i++,
+			                'caption' => $subject_info['caption'],
+			                'type' => $subject_info['type'],
+			                'place' => $subject_info['place'],
+			                'comments' => decode_comments_data($comments));
+		}
+		return $data;
+	}
+
+	/* Расшифровка ленты комментариев к предмету */
+	function decode_comments_data($comments_list) {
+		$comments = array();
+		$i = 1;
+		foreach (explode(',', $comments_list) as $comment_id) {
+			if ($comment_id) {
+				$query = "SELECT * FROM `comments` WHERE `id` = '$comment_id'";
+				$data1 = database_query($query);
+				if ($comment = mysql_fetch_assoc($data1)) {
+					$comments[] = array('queue' => $i++,
+					                    'author' => user_info($comment['author']),
+					                    'content' => $comment['content'],
+					                    'attachments' => attachments_data($comment['attachments']),
+					                    'important' => $comment['important']);
+				}
+			}
+		}
+		return $comments;
+	}
+
+	/* Информация о пользователе */
+	function user_info($user_id) {
+		return $user_id;
+	}
+
+	/* Прикреплённые файлы */
+	function attachments_data($list) {
+		return $list;
 	}
 
 	/* Вычисление "краёв" ленты */
