@@ -51,6 +51,7 @@ HTML, BODY {
 #panel .icon SPAN { display: block; position: absolute; top: 5px; left: 14px; width: 17px; height: 17px; }
 #panel .icon.schedules SPAN { background: url(images/menu-schedules.png) no-repeat; }
 #panel .icon.library SPAN { background: url(images/menu-library.png) no-repeat; }
+#panel .icon.map SPAN { background: url(images/menu-map.png) no-repeat; }
 #panel #user { float: right; display: inline-block; height: 25px; border-left: 1px solid rgba(255,255,255,0.15); }
 #panel #user A.user { display: inline-block; position: relative; padding: 6px 42px 0 37px; height: 21px; color: #ffc; font: bold 13px "Arial"; text-shadow: black 1px 1px 1px; border-left: 2px solid #222; text-decoration: none; }
 #panel #user A.user:hover { background: rgba(0,0,0,0.15); }
