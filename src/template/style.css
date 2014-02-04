@@ -48,16 +48,16 @@ HTML, BODY {
 #panel UL LI A:hover { background: rgba(0,0,0,0.15); }
 #panel UL LI A.active { background: #222 !important; }
 #panel .icon { position: relative; padding-left: 37px; }
-#panel .icon SPAN { display: block; position: absolute; top: 5px; left: 14px; width: 17px; height: 17px; }
-#panel .icon.schedules SPAN { background: url(images/menu-schedules.png) no-repeat; }
-#panel .icon.library SPAN { background: url(images/menu-library.png) no-repeat; }
-#panel .icon.map SPAN { background: url(images/menu-map.png) no-repeat; }
+#panel .icon SPAN { display: block; position: absolute; top: 5px; left: 14px; width: 18px; height: 18px; }
+#panel .icon.schedules SPAN { background: url(images/iconset.png) no-repeat 0 0; }
+#panel .icon.library SPAN { background: url(images/iconset.png) no-repeat -18px 0; }
+#panel .icon.map SPAN { background: url(images/iconset.png) no-repeat -36px 0; }
 #panel #user { float: right; display: inline-block; height: 25px; border-left: 1px solid rgba(255,255,255,0.15); }
 #panel #user A.user { display: inline-block; position: relative; padding: 6px 42px 0 37px; height: 21px; color: #ffc; font: bold 13px "Arial"; text-shadow: black 1px 1px 1px; border-left: 2px solid #222; text-decoration: none; }
 #panel #user A.user:hover { background: rgba(0,0,0,0.15); }
 #panel #user A.user.active { background: #222 !important; }
-#panel #user A.user SPAN.pic { display: block; position: absolute; top: 6px; left: 15px; width: 16px; height: 16px; background: url(images/user-icon.png) no-repeat; }
-#panel #user A.user SPAN.sub { display: block; position: absolute; top: 6px; right: 12px; width: 16px; height: 16px; background: url(images/user-sub.png) no-repeat; }
+#panel #user A.user SPAN.pic { display: block; position: absolute; top: 6px; left: 15px; width: 16px; height: 16px; background: url(images/iconset.png) no-repeat -54px 0; }
+#panel #user A.user SPAN.sub { display: block; position: absolute; top: 6px; right: 12px; width: 16px; height: 16px; background: url(images/iconset.png) no-repeat -70px 0; }
 
 
 #vklogin {
@@ -121,5 +121,5 @@ HTML, BODY {
 .lesson.empty:before { background: #d1d1d1; }
 .lesson .caption { font: bold 17px "Times New Roman"; }
 .lesson .place { position: relative; padding-left: 19px; font: 13px "Arial"; }
-.lesson .place:before { position: absolute; z-index: 4; top: -1px; left: 0; width: 18px; height: 18px; background: url(images/place.png) no-repeat; content: ''; }
+.lesson .place:before { position: absolute; z-index: 4; top: -1px; left: 0; width: 18px; height: 18px; background: url(images/iconset.png) no-repeat -86px 0; content: ''; }
 .lesson .place A { text-decoration: none; border-bottom: 1px dashed #525C7A; color: #525C7A; }
