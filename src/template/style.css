@@ -113,7 +113,9 @@ HTML, BODY {
 .dayCaption .dayName { margin-left: 20px; }
 
 .lesson { position: relative; height: 55px; padding: 10px 15px 10px 20px; border-bottom: 1px solid #d8d8d8; }
-.lesson.l2, .lesson.l4 { border-top: 1px solid #f1f1f1; background: #f2f2f2; }
+.lesson:nth-child(even) { border-top: 1px solid #f1f1f1; background: #f2f2f2; }
+.lesson.important { background: #EAFFE8; }
+.lesson:nth-child(even).important { background: #DEF7DC; }
 .lesson:before { position: absolute; top: 5px; bottom: 5px; left: 5px; width: 4px; content: ''; }
 .lesson.lection:before { background: #FFB564; }
 .lesson.lab:before { background: #77E977; }
