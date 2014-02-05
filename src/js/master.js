@@ -130,6 +130,9 @@ function makeBlockElement(block) {
 			/* Если лента комментариев содержит что-то важное - стоит сделать посветку */
 			if (important) $(element).find('.l'+subject.queue).addClass('important');
 		}
+		else if (user.perms != 'guest') {
+			$(element).find('.l'+subject.queue).append('<div class="comments write">Добавить</div>');
+		}
 	});
 	return element;
 }
