@@ -1,3 +1,13 @@
+/* Переменные для пользователя */
+var user = { logged: $('#logged').val() };
+if (user.logged) {
+	user.id = $('#user_id').val();
+	user.token = $('#user_token').val();
+	user.perms = $('#user_perms').val();
+} else {
+	user.perms = 'guest';
+}
+
 /* Переменные для анимации */
 var display = { 'margin_left': 50,
                 'block_width': 250,
