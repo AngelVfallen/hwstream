@@ -1,3 +1,16 @@
+/*
+	Homework Stream, v1.0
+	http://github.com/asleepwalker/hwstream
+
+	by Artyom "Sleepwalker" Fedosov, 2014
+	http://me.asleepwalker.ru/
+	mail@asleepwalker.ru
+*/
+
+//-----------------------------------------------------------------------------
+/* 1. Объявление переменных и иниализация */
+//-----------------------------------------------------------------------------
+
 /* Переменные для пользователя */
 var user = { logged: $('#logged').val() };
 if (user.logged) {
@@ -35,6 +48,10 @@ loadBlocks('init');
 
 /* Назначаем контролы для переходов вперёд-назад */
 correctNavigation();
+
+//-----------------------------------------------------------------------------
+/* 1. Загрузка и обработка данных */
+//-----------------------------------------------------------------------------
 
 /* Загрузка новых блоков */
 function loadBlocks(query) {
@@ -92,7 +109,11 @@ function buildBlocks(raw_data) {
 	display.setBusyState(false);
 }
 
-/* Генерация кода и создание блока */
+//-----------------------------------------------------------------------------
+/* 2. Шаблоны для отображения данных */
+//-----------------------------------------------------------------------------
+
+/* Создание элемента для блока */
 function makeBlockElement(block) {
 	var element = $('<div class="day"><div class="dayCaption '+block.tags+'"><span class="date">'+block.short_date+'</span>&nbsp;<span class="dayName">'+block.day+'</span></div><div class="schedule"></div></div>');
 	block.data.forEach(function(subject) { // Предметы
@@ -113,6 +134,13 @@ function makeBlockElement(block) {
 	return element;
 }
 
+/* Создание элемента для комментария */
+function makeCommentElement(comment) { }
+
+//-----------------------------------------------------------------------------
+/* 3. Навигация по ленте времени */
+//-----------------------------------------------------------------------------
+
 /* Переход на один шаг */
 function loadStep(direction) {
 	if (!display.busy) {
@@ -126,6 +154,43 @@ function loadStep(direction) {
 		}
 	}
 }
+
+/* Прыжок к заданной дате */
+function loadJump() {}
+
+//-----------------------------------------------------------------------------
+/* 4. Просмотр и добавление комментариев */
+//-----------------------------------------------------------------------------
+
+//-----------------------------------------------------------------------------
+/* 5. Работа с виджетами */
+//-----------------------------------------------------------------------------
+
+/* Виджет lightbox */
+var lightbox = { shown: false,
+                 element: $('#lightbox')};
+
+/* Включение режима light и отображение данных */
+lightbox.show = function(data) {
+	lightbox.shown = true;
+	lightbox.resize();
+	$(lightbox.element).append(data).fadeIn(500);
+};
+
+/* Выключение режима light и очистка виджета */
+lightbox.hide = function(data) {
+	$(lightbox.element).fadeOut(500, function() {
+		lightbox.shown = false;
+		$(lightbox.element).html('');
+	});
+};
+
+/* Адаптация виджета к измению размеров экрана */
+lightbox.resize = function(data) { };
+
+//-----------------------------------------------------------------------------
+/* 6. Анимация и отображение данных */
+//-----------------------------------------------------------------------------
 
 /* Анимация первой загрузки блоков */
 function initAnimate() {
@@ -169,11 +234,76 @@ function stepAnimate(direction) {
 	});
 }
 
+/* Скольжение до правого края, чтобы показать последний блок */
+function slideRightEdge() {
+
+	/* Сдвигаем блоки влево так, чтобы показать аккурат последний блок */
+	var left = parseInt($(display.blocks[display.blocks.length-1].element).css('left'));
+	var delta = left - ($('#display').width()-(display.margin_left+display.block_width));
+	$('#display .day').each(function() {
+		var now = parseInt($(this).css('left'));
+		$(this).stop().animate({ 'left': (now-delta)+'px' }, 500);
+		display.edged = -delta; // Сохраняем расстояние для восстановления исходного состояния
+	});
+}
+
+/* Скольжение до левого края, чтобы показать первый блок */
+function slideLeftEdge() {
+
+	/* Сдвигаем блоки вправо так, чтобы показать блок, который обычно за левым краем */
+	var left = parseInt($(display.blocks[0].element).css('left'));
+	var delta = display.margin_left-left;
+	$('#display .day').each(function() {
+		var now = parseInt($(this).css('left'));
+		$(this).stop().animate({ 'left': (now+delta)+'px' }, 500);
+		display.edged = delta;
+	});
+}
+
+/* Возвращаемся к обычной системе пошагового перехода */
+function unslideEdge() {
+
+	/* Сдвигаем все блоки на то расстояние, на которое их отодвинул краевой слайдер */
+	$('#display .day').each(function() {
+		var now = parseInt($(this).css('left'));
+		$(this).stop().animate({ 'left': (now-display.edged)+'px' }, 500);
+	});
+
+	/* Возвращение к обычному состоянию */
+	display.edged = 0;
+	correctNavigation();
+}
+
 /* Анимация прыжка к заданной дате */
 function jumpAnimate(direction) { }
 
-/* Догрузить блоки, если после изменения размера появилось пустующее место */
+/* Анимация догрузки блоков в случае появления свободного пространства */
+function addAnimate(start) {
+
+	/* Перебираем все новоприбывшие блоки */
+	for (var i = start; i < display.blocks.length; i++) {
+		var block = display.blocks[i];
+		var element = makeBlockElement(block);
+    	$('#display').append(element);
+
+    	/* Передаём ссылку на элемент в дисплей */
+    	block.element = element;
+
+    	/* Анимация добавления блока */
+    	$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
+    		animate({ 'opacity': 1, 'left': (display.margin_left+((display.block_width+display.block_margin)*block.queue))+'px' }, 500);
+	}
+}
+
+//-----------------------------------------------------------------------------
+/* 7. Технические функции, адаптация к среде */
+//-----------------------------------------------------------------------------
+
+/* Реакция на изменение размеров экрана */
 function resizeDisplay() {
+
+	/* Запустить resize у виджетов */
+	if (lightbox.shown) lightbox.resize();
 
 	/* Проверяем, сколько теперь доступно места */
 	calculateDisplayCapacity();
@@ -196,24 +326,6 @@ function resizeDisplay() {
 			var last = display.blocks[display.blocks.length-1];
 			if (!display.busy) loadBlocks('add,'+last.date+','+last.queue+','+(display.blocks.length));
 		}
-	}
-}
-
-/* Анимация догрузки блоков в случае появления свободного пространства */
-function addAnimate(start) {
-
-	/* Перебираем все новоприбывшие блоки */
-	for (var i = start; i < display.blocks.length; i++) {
-		var block = display.blocks[i];
-		var element = makeBlockElement(block);
-    	$('#display').append(element);
-
-    	/* Передаём ссылку на элемент в дисплей */
-    	block.element = element;
-
-    	/* Анимация добавления блока */
-    	$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
-    		animate({ 'opacity': 1, 'left': (display.margin_left+((display.block_width+display.block_margin)*block.queue))+'px' }, 500);
 	}
 }
 
@@ -269,44 +381,4 @@ function correctNavigation() {
 			});
 		}
 	}
-}
-
-/* Скольжение до правого края, чтобы показать последний блок */
-function slideRightEdge() {
-
-	/* Сдвигаем блоки влево так, чтобы показать аккурат последний блок */
-	var left = parseInt($(display.blocks[display.blocks.length-1].element).css('left'));
-	var delta = left - ($('#display').width()-(display.margin_left+display.block_width));
-	$('#display .day').each(function() {
-		var now = parseInt($(this).css('left'));
-		$(this).stop().animate({ 'left': (now-delta)+'px' }, 500);
-		display.edged = -delta; // Сохраняем расстояние для восстановления исходного состояния
-	});
-}
-
-/* Скольжение до левого края, чтобы показать первый блок */
-function slideLeftEdge() {
-
-	/* Сдвигаем блоки вправо так, чтобы показать блок, который обычно за левым краем */
-	var left = parseInt($(display.blocks[0].element).css('left'));
-	var delta = display.margin_left-left;
-	$('#display .day').each(function() {
-		var now = parseInt($(this).css('left'));
-		$(this).stop().animate({ 'left': (now+delta)+'px' }, 500);
-		display.edged = delta;
-	});
-}
-
-/* Возвращаемся к обычной системе пошагового перехода */
-function unslideEdge() {
-
-	/* Сдвигаем все блоки на то расстояние, на которое их отодвинул краевой слайдер */
-	$('#display .day').each(function() {
-		var now = parseInt($(this).css('left'));
-		$(this).stop().animate({ 'left': (now-display.edged)+'px' }, 500);
-	});
-
-	/* Возвращение к обычному состоянию */
-	display.edged = 0;
-	correctNavigation();
 }
