@@ -125,10 +125,10 @@
 
 		$subjects = $GLOBALS['subjects'];
 		$i = 1;
-		foreach (explode(';', $raw_data) as $subject) {
-			$subject_data = explode(':', $subject, 2);
-			$subject_info = $subjects[$subject_data[0]];
-			if (isset($subject_data[1])) $comments = $subject_data[1];
+		foreach (explode(';', $raw_data) as $lesson) {
+			$lesson_data = explode(':', $lesson, 2);
+			$subject_info = $subjects[$lesson_data[0]];
+			if (isset($lesson_data[1])) $comments = $lesson_data[1];
 			else $comments = '';
 
 			$data[] = array('queue' => $i++,
@@ -151,6 +151,7 @@
 				if ($comment = mysql_fetch_assoc($data1)) {
 					$comments[] = array('queue' => $i++,
 					                    'author' => user_info($comment['author']),
+					                    'added' => $comment['added'],
 					                    'content' => $comment['content'],
 					                    'attachments' => attachments_data($comment['attachments']),
 					                    'important' => $comment['important']);
@@ -162,12 +163,21 @@
 
 	/* Информация о пользователе */
 	function user_info($user_id) {
-		return $user_id;
+		$data = array('name' => 'DELETED');
+		$query = "SELECT * FROM `users` WHERE `id` = '$user_id'";
+		$data['name'] = $query;
+		$data1 = database_query($query);
+		if ($user = mysql_fetch_assoc($data1)) {
+			$data['name'] = $user['name'];
+			$data['avatar'] = $user['avatar'];
+ 		}
+		return $data;
 	}
 
 	/* Прикреплённые файлы */
 	function attachments_data($list) {
-		return $list;
+		$data = array();
+		return $data;
 	}
 
 	/* Вычисление "краёв" ленты */

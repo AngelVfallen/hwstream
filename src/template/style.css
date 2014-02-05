@@ -61,3 +61,11 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 #lightbox #lb_wrap, #lightbox .darkenZoneLB { position: fixed; z-index: 10000; }
 #lightbox #lb_wrap { border: 8px solid rgba(0,0,0,0.6); border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; width: 582px; }
 #lightbox #lb_body { background: #fff; border: 1px solid #aaa; border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px; padding: 15px; width: 550px; }
+
+#comments .comment { border-bottom: 1px solid #ddd; margin-bottom: 10px; padding-bottom: 10px; }
+#comments .comment:last-child { border: none; padding-bottom: 0; }
+#comments .comment .avatar { float: left; }
+#comments .comment .content { margin-left: 60px; }
+#comments .comment .content .name { color: #26507C; font: bold 14px "Arial"; margin-bottom: 5px; }
+#comments .comment .content .text { color: #111; font: 13px "Arial"; margin-bottom: 8px; }
+#comments .comment .content .added { color: #999; font: 11px "Arial"; }

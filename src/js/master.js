@@ -118,6 +118,8 @@ function makeBlockElement(block) {
 	var element = $('<div class="day"><div class="dayCaption '+block.tags+'"><span class="date">'+block.short_date+'</span>&nbsp;<span class="dayName">'+block.day+'</span></div><div class="schedule"></div></div>');
 	block.data.forEach(function(subject) { // Предметы
 		$(element).find('.schedule').append('<div class="lesson l'+subject.queue+' '+subject.type+'"><p class="caption">'+subject.caption+'</p><p class="place"><a href="#">'+subject.place+'</a></p></div>');
+
+		/* Если к уроку есть комментарии - отобразить счётчик */
 		if (subject.comments.length > 0) { // Комментарии
 			var important = false;
 			$(element).find('.l'+subject.queue).append('<div class="comments">'+subject.comments.length+'</div>');
@@ -130,7 +132,7 @@ function makeBlockElement(block) {
 			/* Если лента комментариев содержит что-то важное - стоит сделать посветку */
 			if (important) $(element).find('.l'+subject.queue).addClass('important');
 		}
-		else if (user.perms != 'guest') {
+		else if (user.perms != 'guest') { // Кроме гостей все могут добавлять контент
 			$(element).find('.l'+subject.queue).append('<div class="comments write">Добавить</div>');
 		}
 	});
@@ -138,7 +140,13 @@ function makeBlockElement(block) {
 }
 
 /* Создание элемента для комментария */
-function makeCommentElement(comment) { }
+function makeCommentElement(comment) {
+	var element = $('<div class="comment"><div class="avatar"><img src="'+comment.author.avatar+'" title="'+comment.author.name+'" title="'+comment.author.name+'"></div><div class="content"><p class="name">'+comment.author.name+'</p><p class="text">'+comment.content+'</p><ul class="attachments"></ul><p class="added">'+comment.added+'</p></div></div>');
+	comment.attachments.forEach(function(attached) { // Прикреплённые файлы
+		//$(element).find('.attachments').append('<li class="'+attached.icon+'">'+attached.caption+'</li>');
+	});
+	return element;
+}
 
 //-----------------------------------------------------------------------------
 /* 3. Навигация по ленте времени */
@@ -168,7 +176,7 @@ function loadJump() {}
 /* Включение поддержки кнопки обсуждения */
 function activateCommentsViewer(block) {
 	block.data.forEach(function(lesson) {
-		$(block.element).find('.lesson.l'+lesson.queue).click(function() {
+		$(block.element).find('.lesson.l'+lesson.queue+' .comments').click(function() {
 			openCommentsViewer(block, lesson);
 		});
 	});
@@ -176,14 +184,21 @@ function activateCommentsViewer(block) {
 
 /* Просмотр комментариев */
 function openCommentsViewer(block, lesson) {
-	var data = $('<div id="comments">no comments >_></div>');
+	var wrapper = $('<div id="comments"></div>');
+
+	/* Если есть комментарии - отобразить их поочерёдно */
 	if (lesson.comments.length > 0) {
 		lesson.comments.forEach(function(comment) {
-			//$(data).find('#comments').append(makeCommentElement(comment));
+			$(wrapper).append(makeCommentElement(comment));
 		});
 	}
-	//$(data).append(makeCommentForm());
-	lightbox.show(data);
+
+	/* Есть пользователь залогинен - он может добавлять контент */
+	//if (user.logged)  $(data).append(makeCommentForm());
+
+	/* Открыть виджет lightbox для комментариев */
+	console.log(wrapper);
+	lightbox.show(wrapper);
 }
 
 //-----------------------------------------------------------------------------
