@@ -8,7 +8,11 @@
 	<body>
 		<div id="panel">
 			<div id="user">
+				<input id="logged" type="hidden" value="<?php echo isset($GLOBALS['user']) ?>">
 				<?php if(isset($GLOBALS['user'])) : ?>
+					<input id="user_id" type="hidden" value="<?php echo $GLOBALS['user']['id'] ?>">
+					<input id="user_token" type="hidden" value="<?php echo $GLOBALS['user']['token'] ?>">
+					<input id="user_perms" type="hidden" value="<?php echo $GLOBALS['user']['perms'] ?>">
 					<a href="#" class="user"><span class="pic"></span><?php echo $GLOBALS['user']['name'] ?><span class="sub"></span></a>
 				<?php else : ?>
 					<a id="vklogin" href="https://oauth.vk.com/authorize?client_id=4099924&scope=notify,offline&redirect_uri=http://va32kpi.ru/login.php&response_type=code&v=5.5" rel="nofollow">&nbsp;</a>
