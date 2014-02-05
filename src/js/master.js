@@ -165,31 +165,77 @@ function loadJump() {}
 /* 4. Просмотр и добавление комментариев */
 //-----------------------------------------------------------------------------
 
+/* Включение поддержки кнопки обсуждения */
+function activateCommentsViewer(block) {
+	block.data.forEach(function(lesson) {
+		$(block.element).find('.lesson.l'+lesson.queue).click(function() {
+			openCommentsViewer(block, lesson);
+		});
+	});
+}
+
+/* Просмотр комментариев */
+function openCommentsViewer(block, lesson) {
+	var data = $('<div id="comments">no comments >_></div>');
+	if (lesson.comments.length > 0) {
+		lesson.comments.forEach(function(comment) {
+			//$(data).find('#comments').append(makeCommentElement(comment));
+		});
+	}
+	//$(data).append(makeCommentForm());
+	lightbox.show(data);
+}
+
 //-----------------------------------------------------------------------------
 /* 5. Работа с виджетами */
 //-----------------------------------------------------------------------------
 
 /* Виджет lightbox */
 var lightbox = { shown: false,
-                 element: $('#lightbox')};
+                 element: $('#lightbox'),
+                 workspace: $('#lb_body'),
+                 width: 582 };
 
-/* Включение режима light и отображение данных */
+/* Режим lightbox отключается при клике вне его области */
+$(lightbox.element).find('.darkenZoneLB').click(function() {
+	lightbox.hide();
+});
+
+/* Включение режима lightbox и отображение данных */
 lightbox.show = function(data) {
 	lightbox.shown = true;
 	lightbox.resize();
-	$(lightbox.element).append(data).fadeIn(500);
+	$(lightbox.workspace).append(data);
+	$(lightbox.element).fadeIn(500);
 };
 
-/* Выключение режима light и очистка виджета */
-lightbox.hide = function(data) {
+/* Выключение режима lightbox и очистка виджета */
+lightbox.hide = function() {
 	$(lightbox.element).fadeOut(500, function() {
 		lightbox.shown = false;
-		$(lightbox.element).html('');
+		$(lightbox.workspace).html('');
 	});
 };
 
 /* Адаптация виджета к измению размеров экрана */
-lightbox.resize = function(data) { };
+lightbox.resize = function() {
+
+	/* Расположение и размеры lightbox'а */
+	var width = lightbox.width;
+	var height = $('#lb_wrap').height()+66;
+	var top = ($(window).height()-height)/2.25;
+	var bottom = top+height;
+	var side = ($(window).width()-lightbox.width)/2;
+
+	/* Расположение окна lightbox'а */
+	$('#lb_wrap').css({ 'left': side+'px', 'top': top+'px' });
+
+	/* Затемнённая зона вокруг окна */
+	$('#lb_top').css({ 'left': '0', 'top': '0', 'width': '100%', 'height': top+'px' });
+	$('#lb_bottom').css({ 'left': '0', 'top': bottom+'px', 'bottom': '0', 'width': '100%' });
+	$('#lb_left').css({ 'left': '0', 'top': top+'px', 'width': side+'px', 'height': height+'px' });
+	$('#lb_right').css({ 'right': '0', 'top': top+'px', 'width': (side-16)+'px', 'height': height+'px' });
+};
 
 //-----------------------------------------------------------------------------
 /* 6. Анимация и отображение данных */
@@ -205,6 +251,9 @@ function initAnimate() {
 
     	/* Передаём ссылку на элемент в дисплей */
     	block.element = element;
+
+    	/* Включаем комментирование в блоке */
+    	activateCommentsViewer(block);
 
     	/* Анимация появления блока */
     	$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
