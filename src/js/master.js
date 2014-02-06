@@ -124,7 +124,11 @@ function makeBlockElement(block) {
 
 /* Создание элемента для занятия */
 function makeLessonElement(lesson) {
-	var element = $('<div class="lesson l'+lesson.queue+' '+lesson.type+'"><p class="caption">'+lesson.caption+'</p><p class="place"><a href="#">'+lesson.place+'</a></p></div>');
+	var element = $('<div class="lesson l'+lesson.queue+' '+lesson.type+'"></div>');
+
+	if (lesson.type != 'empty') { // Игнорируем "окна" в расписании
+		$(element).append('<p class="caption">'+lesson.caption+'</p><p class="place"><a href="#">'+lesson.place+'</a></p>');
+	}
 
 	/* Если к уроку есть комментарии - отобразить счётчик */
 	if (lesson.comments.length > 0) { // Комментарии

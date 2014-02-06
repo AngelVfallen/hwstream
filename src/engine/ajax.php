@@ -110,8 +110,8 @@
 			if ($block = mysql_fetch_assoc($data1)) {
 
 				/* Создаём новый комментарий */
-				$important = false;
-				if ($_POST['important'] == 'true') $important = true;
+				$important = 0;
+				if ($_POST['important'] == 'true') $important = 1;
 				$query = "INSERT INTO `comments` (`id`, `content`, `attachments`, `important`, `added`, `author`) VALUES (NULL, '".addslashes($_POST['comment'])."', '', '".$important."', NOW(), '".$user['id']."')";
 				database_query($query);
 
@@ -166,18 +166,27 @@
 		$i = 1;
 		foreach (explode(';', $raw_data) as $lesson) {
 			$lesson_data = explode(':', $lesson, 2);
-			$subject_info = $subjects[$lesson_data[0]];
 
 			/* Если комментариев нет, передаём пустую строку */
 			if (isset($lesson_data[1])) $comments = $lesson_data[1];
 			else $comments = '';
 
-			/* Расшифрованные данные блока на выход */
-			$data[] = array('queue' => $i++,
-			                'caption' => $subject_info['caption'],
-			                'type' => $subject_info['type'],
-			                'place' => $subject_info['place'],
-			                'comments' => decode_comments_data($comments));
+			if ($lesson_data[0] != '0') { // Игнорируем "окна" в расписании
+
+				/* Расшифрованные данные блока на выход */
+				$subject_info = $subjects[$lesson_data[0]];
+				$data[] = array('queue' => $i++,
+				                'caption' => $subject_info['caption'],
+				                'type' => $subject_info['type'],
+				                'place' => $subject_info['place'],
+				                'comments' => decode_comments_data($comments));
+			} else {
+
+				/* Окна передаём отдельным типом, а ещё к ним тоже могут быть комментарии */
+				$data[] = array('queue' => $i++,
+				                'type' => 'empty',
+				                'comments' => decode_comments_data($comments));
+			}
 		}
 		return $data;
 	}
@@ -218,7 +227,7 @@
 				/* Получаем комментарий из базы данных */
 				$query = "SELECT * FROM `comments` WHERE `id` = '$comment_id'";
 				$data1 = database_query($query);
-				if ($comment = mysql_fetch_assoc($data1)) {
+				if (($comment = mysql_fetch_assoc($data1)) && ($comment['important'] >= 0)) { // Если important < 0, то коммент удалён
 
 					/* Расшифрованные данные на выход */
 					$comments[] = array('queue' => $i++,
@@ -237,7 +246,6 @@
 	function user_info($user_id) {
 		$data = array('name' => 'DELETED');
 		$query = "SELECT * FROM `users` WHERE `id` = '$user_id'";
-		$data['name'] = $query;
 		$data1 = database_query($query);
 		if ($user = mysql_fetch_assoc($data1)) {
 			$data['name'] = $user['name'];
