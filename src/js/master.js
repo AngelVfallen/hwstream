@@ -133,7 +133,7 @@ function makeLessonElement(lesson) {
 
 		/* Ищем важные комментарии */
 		lesson.comments.forEach(function(comment) {
-			if (comment.important > 0) important = true;
+			if (comment.important == '1') important = true;
 		});
 
 		/* Если лента комментариев содержит что-то важное - стоит сделать посветку */
@@ -155,7 +155,7 @@ function makeCommentElement(comment) {
 }
 
 function makeCommentForm() {
-	var element = $('<div id="form"><div id="text"><textarea></textarea><div id="attach"></div></div><div id="controls"><div id="submit" class="button">Добавить</div></div></div>');
+	var element = $('<div id="form"><div id="text"><textarea></textarea><div id="attach"></div></div><div id="controls"><div id="important"><input type="checkbox">&nbsp;<label>Задание</label></div><div id="submit" class="button">Добавить</div></div></div>');
 	return element;
 }
 
@@ -188,7 +188,7 @@ function loadJump() {}
 function activateCommentsViewer(block) {
 	block.data.forEach(function(lesson) {
 		$(block.element).find('.lesson.l'+lesson.queue+' .comments').click(function() {
-			openCommentsViewer(block, lesson);
+			if (!display.busy) openCommentsViewer(block, lesson);
 		});
 	});
 }
@@ -207,19 +207,34 @@ function openCommentsViewer(block, lesson) {
 	/* Есть пользователь залогинен - он может добавлять контент */
 	if (user.logged) $(wrapper).append(makeCommentForm());
 
-	/* Открыть виджет lightbox для комментариев */
+	/* Открыть виджет lightbox c нашими данными */
 	lightbox.show(wrapper);
 
 	/* Включить форму добавления комментариев, если таковая имеется */
-	if (user.logged) activateCommentForm();
+	if (user.logged) activateCommentForm(block, lesson);
 }
 
 /* Работа с формой добавления комментариев */
-function activateCommentForm() {
+function activateCommentForm(block, lesson) {
 
 	/* Добавление комментария */
 	$('#comments #form #submit').click(function() {
-		//
+		if (!display.busy) {
+			display.setBusyState(true);
+			var text = $('#comments #form #text textarea').val();
+			var important = $('#comments #form #important input').is(':checked');
+			var to = block.date+','+lesson.queue;
+			$.post('/engine/ajax.php', { comment: text, important: important, attached: '', to: to, token: user.token }, function(data) {
+				display.setBusyState(false);
+				var new_comment = JSON.parse(data);
+				lesson.comments.push(new_comment[0]);
+				$(block.element).find('.lesson.l'+lesson.queue).replaceWith(makeLessonElement(lesson));
+				$('#lightbox #comments #form').before(makeCommentElement(new_comment[0]));
+				$('#comments #form #text textarea').val('');
+				$('#comments #form #important input').prop('checked', false);
+				lightbox.resize('slide');
+			});
+		}
 	});
 }
 
@@ -243,7 +258,7 @@ lightbox.show = function(data) {
 	lightbox.shown = true;
 	$(lightbox.workspace).append(data);
 	$(lightbox.element).fadeIn(500);
-	lightbox.resize();
+	lightbox.resize('just');
 };
 
 /* Выключение режима lightbox и очистка виджета */
@@ -255,7 +270,7 @@ lightbox.hide = function() {
 };
 
 /* Адаптация виджета к измению размеров экрана */
-lightbox.resize = function() {
+lightbox.resize = function(type) {
 
 	/* Расположение и размеры lightbox'а */
 	var width = lightbox.width;
@@ -265,7 +280,13 @@ lightbox.resize = function() {
 	var side = ($(window).width()-lightbox.width)/2;
 
 	/* Расположение окна lightbox'а */
-	$('#lb_wrap').css({ 'left': side+'px', 'top': top+'px' });
+	var lb_wrap = { 'left': side+'px', 'top': top+'px' };
+	if (type == 'just') { // Без анимации
+		$('#lb_wrap').css(lb_wrap);
+	}
+	else if (type == 'slide') { // Скольжение
+		$('#lb_wrap').animate(lb_wrap, 300);
+	}
 
 	/* Затемнённая зона вокруг окна */
 	$('#lb_top').css({ 'left': '0', 'top': '0', 'width': '100%', 'height': top+'px' });
@@ -392,7 +413,7 @@ function addAnimate(start) {
 function resizeDisplay() {
 
 	/* Запустить resize у виджетов */
-	if (lightbox.shown) lightbox.resize();
+	if (lightbox.shown) lightbox.resize('slide');
 
 	/* Проверяем, сколько теперь доступно места */
 	calculateDisplayCapacity();

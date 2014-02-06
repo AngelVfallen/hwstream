@@ -39,7 +39,7 @@
 
 			/* Передаём актуальные блоки на всю ёмкость экрана */
 			$i = 0;
-			$limit = $_POST['capacity'];
+			$limit = addslashes($_POST['capacity']);
 			$query = "SELECT * FROM `schedules` WHERE `date` >= DATE(NOW()) ORDER BY `date` ASC LIMIT 0,$limit";
 			$data1 = database_query($query);
 			while ($block = mysql_fetch_assoc($data1)) {
@@ -52,7 +52,7 @@
 			$data['timepunk'] = 'next';
 
 			/* Передаём следующий блок */
-			$query = "SELECT * FROM `schedules` WHERE `date` > '".$data_query[1]."' ORDER BY `date` ASC LIMIT 0,1";
+			$query = "SELECT * FROM `schedules` WHERE `date` > '".addslashes($data_query[1])."' ORDER BY `date` ASC LIMIT 0,1";
 			$data1 = database_query($query);
 			if ($block = mysql_fetch_assoc($data1)) {
 				$blocks[] = make_block($block, $data_query[2]);
@@ -64,7 +64,7 @@
 			$data['timepunk'] = 'prev';
 
 			/* Передаём предыдущий блок */
-			$query = "SELECT * FROM `schedules` WHERE `date` < '".$data_query[1]."' ORDER BY `date` DESC LIMIT 0,1";
+			$query = "SELECT * FROM `schedules` WHERE `date` < '".addslashes($data_query[1])."' ORDER BY `date` DESC LIMIT 0,1";
 			$data1 = database_query($query);
 			if ($block = mysql_fetch_assoc($data1)) {
 				$blocks[] = make_block($block, $data_query[2]);
@@ -77,8 +77,8 @@
 
 			/* Передаём дополнительные блоки, начиная со следующего после отображённого, на всё свободное место */
 			$i = ($data_query[2]+1);
-			$limit = ($_POST['capacity']-$data_query[3])+1;
-			$query = "SELECT * FROM `schedules` WHERE `date` > '".$data_query[1]."' ORDER BY `date` ASC LIMIT 0,$limit";
+			$limit = addslashes(($_POST['capacity']-$data_query[3])+1);
+			$query = "SELECT * FROM `schedules` WHERE `date` > '".addslashes($data_query[1])."' ORDER BY `date` ASC LIMIT 0,$limit";
 			$data1 = database_query($query);
 			while ($block = mysql_fetch_assoc($data1)) {
 				$blocks[] = make_block($block, $i++);
@@ -89,6 +89,45 @@
 		$data['blocks'] = $blocks;
 		echo json_encode($data);
 	}
+	/* Добавление нового комментария */
+	else if (isset($_POST['comment']) && isset($_POST['to']) && isset($_POST['token'])) {
+
+		/* Прежде всего проверим пользователя */
+		$query = "SELECT * FROM  `users` WHERE `token` = '".addslashes($_POST['token'])."'";
+		$data1 = database_query($query);
+
+		/* Если пользователь с таким token есть в базе данных */
+		if ($user = mysql_fetch_assoc($data1)) {
+
+			/* Разбираемся, к чему мы добавляем комментарий */
+			$to = explode(',', $_POST['to'], 2);
+
+			/* Получаем блок, к которому добавляем комментарий */
+			$query = "SELECT * FROM  `schedules` WHERE `date` = '".addslashes($to[0])."'";
+			$data1 = database_query($query);
+
+			/* Если блок найден, создаём комментарий и добавляем его */
+			if ($block = mysql_fetch_assoc($data1)) {
+
+				/* Создаём новый комментарий */
+				$important = false;
+				if ($_POST['important'] == 'true') $important = true;
+				$query = "INSERT INTO `comments` (`id`, `content`, `attachments`, `important`, `added`, `author`) VALUES (NULL, '".addslashes($_POST['comment'])."', '', '".$important."', NOW(), '".$user['id']."')";
+				database_query($query);
+
+				/* Получаем идентификатор нового комментария и модифицируем данные блока */
+				$comment_id = mysql_insert_id();
+				$modified_data = mod_block_data($block['data'], 'comment', array('id' => $comment_id, 'to' => $to[1]));
+
+				/* Обновляем данные блока */
+				$query = "UPDATE `schedules` SET `data` = '".$modified_data."' WHERE `id` = '".$block['id']."'";
+				database_query($query);
+
+				/* Отправляем обработанный комментарий пользователю */
+				echo json_encode(decode_comments_data($comment_id));
+			}
+		}
+	} 
 
 	/* Завершаем работу с базой данных */
 	database_disconnect();
@@ -128,9 +167,12 @@
 		foreach (explode(';', $raw_data) as $lesson) {
 			$lesson_data = explode(':', $lesson, 2);
 			$subject_info = $subjects[$lesson_data[0]];
+
+			/* Если комментариев нет, передаём пустую строку */
 			if (isset($lesson_data[1])) $comments = $lesson_data[1];
 			else $comments = '';
 
+			/* Расшифрованные данные блока на выход */
 			$data[] = array('queue' => $i++,
 			                'caption' => $subject_info['caption'],
 			                'type' => $subject_info['type'],
@@ -140,15 +182,45 @@
 		return $data;
 	}
 
+	/* Изменение данных блока */
+	function mod_block_data($raw_data, $action, $content) {
+
+		if ($action == 'comment') { // Добавить комментарий
+
+			/* Разбираем данные на элементы */
+			$lessons = explode(';', $raw_data); // Занятия этого блока
+			$data = explode(':', $lessons[$content['to']-1]); // Комментарии к нужному занятию
+
+			/* Добавляем новый комментарий */
+			if (isset($data[1]) && $data[1] != '') { // Если есть другие комментарии
+				$comments = explode(',', $data[1]);
+				$comments[] = $content['id'];
+				$data[1] = implode(',', $comments);
+			} else $data[1] = $content['id']; // Если наш комментарий будет первым
+
+			/* Собираем модифицированные данные в рабочий вид */
+			$lessons[$content['to']-1] = implode(':', $data);
+			return implode(';', $lessons);
+		}
+	}
+
 	/* Расшифровка ленты комментариев к предмету */
 	function decode_comments_data($comments_list) {
 		$comments = array();
 		$i = 1;
+
+		/* Перебираем все комментарии поочерёдно */
 		foreach (explode(',', $comments_list) as $comment_id) {
+
+			/* Если список пустой, то будет один элемент - пустая строка, которую надобно проигнорировать */
 			if ($comment_id) {
+
+				/* Получаем комментарий из базы данных */
 				$query = "SELECT * FROM `comments` WHERE `id` = '$comment_id'";
 				$data1 = database_query($query);
 				if ($comment = mysql_fetch_assoc($data1)) {
+
+					/* Расшифрованные данные на выход */
 					$comments[] = array('queue' => $i++,
 					                    'author' => user_info($comment['author']),
 					                    'added' => $comment['added'],
