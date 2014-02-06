@@ -1,5 +1,6 @@
 * { border: 0; border-spacing: 0; margin: 0; outline: 0; padding: 0; }
 A { text-decoration: none; }
+.clearfix { clear: both; }
 
 HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%, rgba(206,206,206,1) 100%);  background: -webkit-gradient(radial, center center, 0px, center center, 100%, color-stop(55%,rgba(244,244,244,1)), color-stop(100%,rgba(206,206,206,1))); background: -webkit-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%); background: -o-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%); background: -ms-radial-gradient(center, ellipse cover,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%); background: radial-gradient(ellipse at center,  rgba(244,244,244,1) 55%,rgba(206,206,206,1) 100%); filter: progid:DXImageTransform.Microsoft.gradient( startColorstr='#f4f4f4', endColorstr='#cecece',GradientType=1 ); height: 100%; overflow-x: hidden; overflow-y: auto; width: 100%; }
 #display { position: relative; }
@@ -63,9 +64,19 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 #lightbox #lb_body { background: #fff; border: 1px solid #aaa; border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px; padding: 15px; width: 550px; }
 
 #comments .comment { border-bottom: 1px solid #ddd; margin-bottom: 10px; padding-bottom: 10px; }
-#comments .comment:last-child { border: none; padding-bottom: 0; }
 #comments .comment .avatar { float: left; }
 #comments .comment .content { margin-left: 60px; }
 #comments .comment .content .name { color: #26507C; font: bold 14px "Arial"; margin-bottom: 5px; }
 #comments .comment .content .text { color: #111; font: 13px "Arial"; margin-bottom: 8px; }
 #comments .comment .content .added { color: #999; font: 11px "Arial"; }
+
+#comments #form #text { background: #F7F7F7; border: 1px solid #B1B1B1; height: 60px; margin-bottom: 8px; padding: 5px; }
+#comments #form #text TEXTAREA { height: 60px; resize: none; width: 100%; }
+#comments #form #attach {}
+#comments #form #controls { position: relative; height: 26px; }
+#comments #form #controls #submit { position: absolute; right: 8px; }
+
+.button { background-color: #222; background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#4B4B4B), to(#1F1F1F)); background-image: -moz-linear-gradient(#4B4B4B, #1F1F1F); background-image: -o-linear-gradient(#4B4B4B, #1F1F1F); background-image: linear-gradient(#4B4B4B, #1F1F1F); -webkit-background-clip: padding; -moz-background-clip: padding; -o-background-clip: padding-box; border: 1px solid #2B2B2B; -webkit-border-radius: 3px; -moz-border-radius: 3px; border-radius: 3px; -moz-box-shadow: 0 0 2px rgba(0,0,0,0.1), 0 0 0 rgba(0,0,0,0.1); -webkit-box-shadow: 0 0 2px rgba(0,0,0,0.1), 0 0 0 rgba(0,0,0,0.1); box-shadow: 0 0 2px rgba(0,0,0,0.1), 0 0 0 rgba(0,0,0,0.1); color: #ECECEC; cursor: pointer; display: inline-block; font: 12px "Arial", sans-serif; overflow: visible; padding: 5px 12px; position: relative; text-decoration: none; text-shadow: 1px 1px 0 black; white-space: nowrap; }
+.button:before { border-top: 1px solid #646464; content: ''; left: 2px; position: absolute; right: 2px; top: 0px; }
+.button:after { border-bottom: 1px solid black; bottom: 0px; content: ''; left: 2px; position: absolute; right: 2px; }
+.button:hover { background-color: #1d1d1d; background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#585858), to(#252525)); background-image: -moz-linear-gradient(#585858, ##252525); background-image: -o-linear-gradient(#585858, ##252525); background-image: linear-gradient(#585858, #252525); };

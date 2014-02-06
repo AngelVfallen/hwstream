@@ -116,35 +116,46 @@ function buildBlocks(raw_data) {
 /* Создание элемента для блока */
 function makeBlockElement(block) {
 	var element = $('<div class="day"><div class="dayCaption '+block.tags+'"><span class="date">'+block.short_date+'</span>&nbsp;<span class="dayName">'+block.day+'</span></div><div class="schedule"></div></div>');
-	block.data.forEach(function(subject) { // Предметы
-		$(element).find('.schedule').append('<div class="lesson l'+subject.queue+' '+subject.type+'"><p class="caption">'+subject.caption+'</p><p class="place"><a href="#">'+subject.place+'</a></p></div>');
-
-		/* Если к уроку есть комментарии - отобразить счётчик */
-		if (subject.comments.length > 0) { // Комментарии
-			var important = false;
-			$(element).find('.l'+subject.queue).append('<div class="comments">'+subject.comments.length+'</div>');
-
-			/* Ищем важные комментарии */
-			subject.comments.forEach(function(comment) {
-				if (comment.important > 0) important = true;
-			});
-
-			/* Если лента комментариев содержит что-то важное - стоит сделать посветку */
-			if (important) $(element).find('.l'+subject.queue).addClass('important');
-		}
-		else if (user.perms != 'guest') { // Кроме гостей все могут добавлять контент
-			$(element).find('.l'+subject.queue).append('<div class="comments write">Добавить</div>');
-		}
+	block.data.forEach(function(lesson) { // Предметы
+		$(element).find('.schedule').append(makeLessonElement(lesson));
 	});
+	return element;
+}
+
+/* Создание элемента для занятия */
+function makeLessonElement(lesson) {
+	var element = $('<div class="lesson l'+lesson.queue+' '+lesson.type+'"><p class="caption">'+lesson.caption+'</p><p class="place"><a href="#">'+lesson.place+'</a></p></div>');
+
+	/* Если к уроку есть комментарии - отобразить счётчик */
+	if (lesson.comments.length > 0) { // Комментарии
+		var important = false;
+		$(element).append('<div class="comments">'+lesson.comments.length+'</div>');
+
+		/* Ищем важные комментарии */
+		lesson.comments.forEach(function(comment) {
+			if (comment.important > 0) important = true;
+		});
+
+		/* Если лента комментариев содержит что-то важное - стоит сделать посветку */
+		if (important) $(element).addClass('important');
+	}
+	else if (user.perms != 'guest') { // Кроме гостей все могут добавлять контент
+		$(element).append('<div class="comments write">Добавить</div>');
+	}
 	return element;
 }
 
 /* Создание элемента для комментария */
 function makeCommentElement(comment) {
-	var element = $('<div class="comment"><div class="avatar"><img src="'+comment.author.avatar+'" title="'+comment.author.name+'" title="'+comment.author.name+'"></div><div class="content"><p class="name">'+comment.author.name+'</p><p class="text">'+comment.content+'</p><ul class="attachments"></ul><p class="added">'+comment.added+'</p></div></div>');
+	var element = $('<div class="comment"><div class="avatar"><img src="'+comment.author.avatar+'" title="'+comment.author.name+'" title="'+comment.author.name+'"></div><div class="content"><p class="name">'+comment.author.name+'</p><p class="text">'+comment.content+'</p><ul class="attachments"></ul><p class="added">'+comment.added+'</p></div><div class="clearfix"></div></div>');
 	comment.attachments.forEach(function(attached) { // Прикреплённые файлы
 		//$(element).find('.attachments').append('<li class="'+attached.icon+'">'+attached.caption+'</li>');
 	});
+	return element;
+}
+
+function makeCommentForm() {
+	var element = $('<div id="form"><div id="text"><textarea></textarea><div id="attach"></div></div><div id="controls"><div id="submit" class="button">Добавить</div></div></div>');
 	return element;
 }
 
@@ -194,11 +205,22 @@ function openCommentsViewer(block, lesson) {
 	}
 
 	/* Есть пользователь залогинен - он может добавлять контент */
-	//if (user.logged)  $(data).append(makeCommentForm());
+	if (user.logged) $(wrapper).append(makeCommentForm());
 
 	/* Открыть виджет lightbox для комментариев */
-	console.log(wrapper);
 	lightbox.show(wrapper);
+
+	/* Включить форму добавления комментариев, если таковая имеется */
+	if (user.logged) activateCommentForm();
+}
+
+/* Работа с формой добавления комментариев */
+function activateCommentForm() {
+
+	/* Добавление комментария */
+	$('#comments #form #submit').click(function() {
+		//
+	});
 }
 
 //-----------------------------------------------------------------------------
@@ -219,9 +241,9 @@ $(lightbox.element).find('.darkenZoneLB').click(function() {
 /* Включение режима lightbox и отображение данных */
 lightbox.show = function(data) {
 	lightbox.shown = true;
-	lightbox.resize();
 	$(lightbox.workspace).append(data);
 	$(lightbox.element).fadeIn(500);
+	lightbox.resize();
 };
 
 /* Выключение режима lightbox и очистка виджета */
@@ -237,7 +259,7 @@ lightbox.resize = function() {
 
 	/* Расположение и размеры lightbox'а */
 	var width = lightbox.width;
-	var height = $('#lb_wrap').height()+66;
+	var height = $('#lb_wrap').outerHeight();
 	var top = ($(window).height()-height)/2.25;
 	var bottom = top+height;
 	var side = ($(window).width()-lightbox.width)/2;
