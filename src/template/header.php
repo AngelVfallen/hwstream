@@ -9,7 +9,7 @@
 		<div id="panel">
 			<div id="user">
 				<input id="logged" type="hidden" value="<?php echo isset($GLOBALS['user']) ?>">
-				<?php if(isset($GLOBALS['user'])) : ?>
+				<?php if (isset($GLOBALS['user'])) : ?>
 					<input id="user_id" type="hidden" value="<?php echo $GLOBALS['user']['id'] ?>">
 					<input id="user_token" type="hidden" value="<?php echo $GLOBALS['user']['token'] ?>">
 					<input id="user_perms" type="hidden" value="<?php echo $GLOBALS['user']['perms'] ?>">
@@ -19,8 +19,8 @@
 				<?php endif; ?>
 			</div>
 			<ul>
-				<li><a href="/" class="icon schedules active"><span></span>Расписание</a></li
-				><li><a href="/?module=library" class="icon library"><span></span>Библиотека</a></li
-				><li><a href="/?module=map" class="icon map"><span></span>Карта</a></li>
+				<li><a href="/" class="icon schedules<?php if (!isset($_GET['module'])) : ?> active<?php endif; ?>"><span></span>Расписание</a></li
+				><li><a href="/?module=library" class="icon library<?php if (isset($_GET['module']) && ($_GET['module'] == 'library')) : ?> active<?php endif; ?>"><span></span>Библиотека</a></li
+				><li><a href="/?module=map" class="icon map<?php if(isset($_GET['module']) && ($_GET['module'] == 'map')) : ?> active<?php endif; ?>"><span></span>Карта</a></li>
 			</ul>
 		</div>

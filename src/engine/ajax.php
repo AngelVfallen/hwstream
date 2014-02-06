@@ -178,7 +178,7 @@
 				$data[] = array('queue' => $i++,
 				                'caption' => $subject_info['caption'],
 				                'type' => $subject_info['type'],
-				                'place' => $subject_info['place'],
+				                'place' => preg_replace(array(0=>'/\[/',1=>'/\]/'), array(0=>'<b>',1=>'</b>'), $subject_info['place']), // Квадратные скобки - жирный текст
 				                'comments' => decode_comments_data($comments));
 			} else {
 

@@ -22,6 +22,7 @@
 	}
 	else $module = '';
 
+	include('engine/widgets.php');
 	switch ($module) {
 		case 'library': include('template/library.php'); break;
 		case 'map':     include('template/map.php');     break;
