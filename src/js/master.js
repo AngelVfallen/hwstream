@@ -315,6 +315,13 @@ lightbox.hide = function() {
 /* Адаптация виджета к измению размеров экрана */
 lightbox.resize = function(type) {
 
+	/* В случае переполнения lightbox'а включаем scroll */
+	$('#lb_body').removeClass('scroll').css({ 'height': 'auto' });
+	if ((($(window).height()-$('#lb_wrap').outerHeight())/2.25) < 50) {
+		$('#lb_body').addClass('scroll').css({ 'height': ($(window).height()-100)+'px' });
+		$('#lb_body').animate({ 'scrollTop': $('#form #text').position().top+'px' }, 1000);
+	}
+
 	/* Расположение и размеры lightbox'а */
 	var width = lightbox.width;
 	var height = $('#lb_wrap').outerHeight();

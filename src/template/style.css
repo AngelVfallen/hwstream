@@ -61,7 +61,8 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 #lightbox { background: rgba(0,0,0,0.8); bottom: 0; left: 0; position: absolute; right: 0; top: 0; z-index: 9999; }
 #lightbox #lb_wrap, #lightbox .darkenZoneLB { position: fixed; z-index: 10000; }
 #lightbox #lb_wrap { border: 8px solid rgba(0,0,0,0.6); border-radius: 5px; -moz-border-radius: 5px; -webkit-border-radius: 5px; width: 582px; }
-#lightbox #lb_body { background: #fff; border: 1px solid #aaa; border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px; padding: 15px; width: 550px; }
+#lightbox #lb_body { background: #fff; border: 1px solid #aaa; border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px; padding: 15px 20px; width: 540px; }
+#lightbox #lb_body.scroll { overflow-x: hidden; overflow-y: scroll; }
 
 #comments .comment { margin-bottom: 20px; }
 #comments .comment .avatar { float: left; padding: 1px; border: 1px solid #ccc; }
