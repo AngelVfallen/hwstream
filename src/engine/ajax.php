@@ -127,7 +127,45 @@
 				echo json_encode(decode_comments_data($comment_id));
 			}
 		}
-	} 
+	}
+	/* Удаление комментария */
+	else if (isset($_POST['delete_comment']) && isset($_POST['token'])) {
+		/* Прежде всего проверим пользователя */
+		$query = "SELECT * FROM  `users` WHERE `token` = '".addslashes($_POST['token'])."'";
+		$data1 = database_query($query);
+
+		/* Если пользователь с таким token есть в базе данных */
+		if ($user = mysql_fetch_assoc($data1)) {
+
+			/* Разбираемся, какой удаляем комментарий */
+			$to = explode(',', $_POST['delete_comment'], 3);
+
+			/* Получаем блок, к которому добавляем комментарий */
+			$query = "SELECT * FROM  `schedules` WHERE `date` = '".addslashes($to[0])."'";
+			$data1 = database_query($query);
+
+			/* Если блок найден, определяем id комментария */
+			if ($block = mysql_fetch_assoc($data1)) {
+
+				$lessons = explode(';', $block['data']);
+				$lesson_data = explode(':', $lessons[$to[1]-1], 2);
+				$comments = explode(',', $lesson_data[1]);
+
+				$query = "SELECT * FROM  `comments` WHERE `id` = '".$comments[$to[2]-1]."'";
+				$data1 = database_query($query);
+
+				if ($comment = mysql_fetch_assoc($data1)) {
+
+					if ($comment['author'] == $user['id']) {
+						$query = "UPDATE `comments` SET `important` = '-1' WHERE `id` = '".$comment['id']."'";
+						database_query($query);
+
+						echo 'success';
+					}
+				}
+			}
+		}
+	}
 
 	/* Завершаем работу с базой данных */
 	database_disconnect();
@@ -248,6 +286,7 @@
 		$query = "SELECT * FROM `users` WHERE `id` = '$user_id'";
 		$data1 = database_query($query);
 		if ($user = mysql_fetch_assoc($data1)) {
+			$data['vk_id'] = $user['user_id'];
 			$data['name'] = $user['name'];
 			$data['avatar'] = $user['avatar'];
  		}

@@ -11,16 +11,6 @@
 /* 1. Объявление переменных и иниализация */
 //-----------------------------------------------------------------------------
 
-/* Переменные для пользователя */
-var user = { logged: $('#logged').val() };
-if (user.logged) {
-	user.id = $('#user_id').val();
-	user.token = $('#user_token').val();
-	user.perms = $('#user_perms').val();
-} else {
-	user.perms = 'guest';
-}
-
 /* Переменные для анимации */
 var display = { 'margin_left': 50,
                 'block_width': 250,
@@ -127,7 +117,7 @@ function makeLessonElement(lesson) {
 	var element = $('<div class="lesson l'+lesson.queue+' '+lesson.type+'"></div>');
 
 	if (lesson.type != 'empty') { // Игнорируем "окна" в расписании
-		$(element).append('<p class="caption">'+lesson.caption+'</p><p class="place"><a href="#">'+lesson.place+'</a></p>');
+		$(element).append('<p class="caption">'+lesson.caption+'</p><p class="place"><a href="?module=map">'+lesson.place+'</a></p>');
 	}
 
 	/* Если к уроку есть комментарии - отобразить счётчик */
@@ -150,8 +140,16 @@ function makeLessonElement(lesson) {
 }
 
 /* Создание элемента для комментария */
-function makeCommentElement(comment) {
-	var element = $('<div class="comment"><div class="avatar"><img src="'+comment.author.avatar+'" title="'+comment.author.name+'" title="'+comment.author.name+'"></div><div class="content"><p class="name">'+comment.author.name+'</p><p class="text">'+comment.content+'</p><ul class="attachments"></ul><p class="added">'+comment.added+'</p></div><div class="clearfix"></div></div>');
+function makeCommentElement(block, lesson, comment) {
+	var element = $('<div class="comment q'+comment.queue+'"><div class="avatar"><img src="'+comment.author.avatar+'" title="'+comment.author.name+'" alt="'+comment.author.name+'"></div><div class="content"><p class="name">'+comment.author.name+'</p><p class="text">'+comment.content+'</p><ul class="attachments"></ul><p class="added">'+comment.added+'</p></div><div class="clearfix"></div></div>');
+	
+	/* Если это комментарий пользователя, то он может его удалить */
+	if (comment.author.vk_id == user.vk_id) {
+		var delete_button = $('<div class="delete" title="Удалить комментарий">удалить</div>');
+		$(delete_button).click(function() { deleteComment(block, lesson, comment); });
+		$(element).prepend(delete_button);
+	}
+
 	comment.attachments.forEach(function(attached) { // Прикреплённые файлы
 		//$(element).find('.attachments').append('<li class="'+attached.icon+'">'+attached.caption+'</li>');
 	});
@@ -191,7 +189,7 @@ function loadJump() {}
 /* Включение поддержки кнопки обсуждения */
 function activateCommentsViewer(block) {
 	block.data.forEach(function(lesson) {
-		$(block.element).find('.lesson.l'+lesson.queue+' .comments').click(function() {
+		$(block.element).find('.lesson.l'+lesson.queue+' .comments').unbind('click').click(function() {
 			if (!display.busy) openCommentsViewer(block, lesson);
 		});
 	});
@@ -204,7 +202,7 @@ function openCommentsViewer(block, lesson) {
 	/* Если есть комментарии - отобразить их поочерёдно */
 	if (lesson.comments.length > 0) {
 		lesson.comments.forEach(function(comment) {
-			$(wrapper).append(makeCommentElement(comment));
+			$(wrapper).append(makeCommentElement(block, lesson, comment));
 		});
 	}
 
@@ -213,8 +211,6 @@ function openCommentsViewer(block, lesson) {
 
 	/* Открыть виджет lightbox c нашими данными */
 	lightbox.show(wrapper);
-
-	/* Включить форму добавления комментариев, если таковая имеется */
 	if (user.logged) activateCommentForm(block, lesson);
 }
 
@@ -223,23 +219,60 @@ function activateCommentForm(block, lesson) {
 
 	/* Добавление комментария */
 	$('#comments #form #submit').click(function() {
+
 		if (!display.busy) {
 			display.setBusyState(true);
+
+			/* Готовим информацию для создания нового комментария */
 			var text = $('#comments #form #text textarea').val();
 			var important = $('#comments #form #important input').is(':checked');
 			var to = block.date+','+lesson.queue;
+
+			/* Отправляем асинхронный запрос */
 			$.post('/engine/ajax.php', { comment: text, important: important, attached: '', to: to, token: user.token }, function(data) {
 				display.setBusyState(false);
+
+				/* Получаем обработанный вариант комментария уже из базы данных */
 				var new_comment = JSON.parse(data);
+
+				/* Добавляем новый комментарий в дисплей */
 				lesson.comments.push(new_comment[0]);
+
+				/* Отображаем новый комментарий в расписаниях */
 				$(block.element).find('.lesson.l'+lesson.queue).replaceWith(makeLessonElement(lesson));
-				$('#lightbox #comments #form').before(makeCommentElement(new_comment[0]));
+				activateCommentsViewer(block);
+
+				/* Отображаем новый комментарий в открытом нынче лайтбоксе */
+				$('#lightbox #comments #form').before(makeCommentElement(block, lesson, new_comment[0]));
+				lightbox.resize('slide'); // Размеры лайтбокса при этом меняются
+
+				/* Очищаем форму, на случай необходимости добавить ещё один комментарий */
 				$('#comments #form #text textarea').val('');
 				$('#comments #form #important input').prop('checked', false);
-				lightbox.resize('slide');
 			});
 		}
 	});
+}
+
+/* Удаление комментария */
+function deleteComment(block, lesson, comment) {
+	if (!display.busy) {
+		display.setBusyState(true);
+
+		var to = block.date+','+lesson.queue+','+comment.queue;
+		$.post('/engine/ajax.php', { delete_comment: to, token: user.token }, function(data) {
+			display.setBusyState(false);
+
+			if (data == 'success') {
+				lesson.comments.splice((lesson.queue-1),1);
+				$(block.element).find('.lesson.l'+lesson.queue).replaceWith(makeLessonElement(lesson));
+
+				/* Отображаем новый комментарий в открытом нынче лайтбоксе */
+				$('#lightbox #comments').find('.q'+lesson.queue).remove();
+				lightbox.resize('slide'); // Размеры лайтбокса при этом меняются
+			}
+		});
+	}
 }
 
 //-----------------------------------------------------------------------------
