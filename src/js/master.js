@@ -141,13 +141,20 @@ function makeLessonElement(lesson) {
 
 /* Создание элемента для комментария */
 function makeCommentElement(block, lesson, comment) {
-	var element = $('<div class="comment q'+comment.queue+'"><div class="avatar"><img src="'+comment.author.avatar+'" title="'+comment.author.name+'" alt="'+comment.author.name+'"></div><div class="content"><p class="name">'+comment.author.name+'</p><p class="text">'+comment.content+'</p><ul class="attachments"></ul><p class="added">'+comment.added+'</p></div><div class="clearfix"></div></div>');
+	var element = $('<div class="comment" data-id="'+comment.id+'"><div class="avatar"><img src="'+comment.author.avatar+'" title="'+comment.author.name+'" alt="'+comment.author.name+'"></div><div class="content"><p class="name">'+comment.author.name+'<span class="added">'+comment.added+'</span></p><p class="text">'+comment.content+'</p><ul class="attachments"></ul><p class="controls"></p></div><div class="clearfix"></div></div>');
 	
 	/* Если это комментарий пользователя, то он может его удалить */
 	if (comment.author.vk_id == user.vk_id) {
-		var delete_button = $('<div class="delete" title="Удалить комментарий">удалить</div>');
+		var delete_button = $('<a href="#" class="delete red" title="Удалить комментарий">Удалить</a>');
 		$(delete_button).click(function() { deleteComment(block, lesson, comment); });
-		$(element).prepend(delete_button);
+		$(element).find('.controls').append(delete_button);
+	}
+	else if (user.logged) { // А на чужие комментарии можно ответить
+		var answer_button = $('<a href="#" class="answer" title="Ответить пользователю">Ответить</a>');
+		$(answer_button).click(function() {
+			$('#comments #form #text textarea').val($('#comments #form #text textarea').val()+comment.author.name+', ');
+		});
+		$(element).find('.controls').append(answer_button);
 	}
 
 	comment.attachments.forEach(function(attached) { // Прикреплённые файлы
@@ -259,16 +266,15 @@ function deleteComment(block, lesson, comment) {
 	if (!display.busy) {
 		display.setBusyState(true);
 
-		var to = block.date+','+lesson.queue+','+comment.queue;
-		$.post('/engine/ajax.php', { delete_comment: to, token: user.token }, function(data) {
+		$.post('/engine/ajax.php', { delete_comment: comment.id, token: user.token }, function(data) {
 			display.setBusyState(false);
 
 			if (data == 'success') {
-				lesson.comments.splice((lesson.queue-1),1);
+				lesson.comments.splice((comment.queue-1),1);
 				$(block.element).find('.lesson.l'+lesson.queue).replaceWith(makeLessonElement(lesson));
 
 				/* Отображаем новый комментарий в открытом нынче лайтбоксе */
-				$('#lightbox #comments').find('.q'+lesson.queue).remove();
+				$('#lightbox #comments').find('.comment[data-id='+comment.id+']').remove();
 				lightbox.resize('slide'); // Размеры лайтбокса при этом меняются
 			}
 		});
@@ -377,7 +383,7 @@ function stepAnimate(direction) {
 
 	/* Общая анимация скольжения в заданную сторону */
 	$(display.blocks).each(function() {
-		$(this.element).stop().animate({'left': (display.margin_left+((display.block_width+display.block_margin)*(this.queue*1)))+'px'}, 500);
+		$(this.element).animate({'left': (display.margin_left+((display.block_width+display.block_margin)*(this.queue*1)))+'px'}, 500);
 	});
 }
 

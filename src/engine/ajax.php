@@ -130,6 +130,7 @@
 	}
 	/* Удаление комментария */
 	else if (isset($_POST['delete_comment']) && isset($_POST['token'])) {
+
 		/* Прежде всего проверим пользователя */
 		$query = "SELECT * FROM  `users` WHERE `token` = '".addslashes($_POST['token'])."'";
 		$data1 = database_query($query);
@@ -138,30 +139,16 @@
 		if ($user = mysql_fetch_assoc($data1)) {
 
 			/* Разбираемся, какой удаляем комментарий */
-			$to = explode(',', $_POST['delete_comment'], 3);
-
-			/* Получаем блок, к которому добавляем комментарий */
-			$query = "SELECT * FROM  `schedules` WHERE `date` = '".addslashes($to[0])."'";
+			$query = "SELECT * FROM  `comments` WHERE `id` = '".addslashes($_POST['delete_comment'])."'";
 			$data1 = database_query($query);
+			if ($comment = mysql_fetch_assoc($data1)) {
 
-			/* Если блок найден, определяем id комментария */
-			if ($block = mysql_fetch_assoc($data1)) {
+				/* Если комментарий в самом деле авторства этого пользователя - удаляем его */
+				if ($comment['author'] == $user['id']) {
+					$query = "UPDATE `comments` SET `important` = '-1' WHERE `id` = '".$comment['id']."'";
+					database_query($query);
 
-				$lessons = explode(';', $block['data']);
-				$lesson_data = explode(':', $lessons[$to[1]-1], 2);
-				$comments = explode(',', $lesson_data[1]);
-
-				$query = "SELECT * FROM  `comments` WHERE `id` = '".$comments[$to[2]-1]."'";
-				$data1 = database_query($query);
-
-				if ($comment = mysql_fetch_assoc($data1)) {
-
-					if ($comment['author'] == $user['id']) {
-						$query = "UPDATE `comments` SET `important` = '-1' WHERE `id` = '".$comment['id']."'";
-						database_query($query);
-
-						echo 'success';
-					}
+					echo 'success';
 				}
 			}
 		}
@@ -175,7 +162,7 @@
 
 		/* Подготовка данных */
 		$date = explode('-', $block['date']);
-		switch (date("w", strtotime($block['date']))) {
+		switch (date('w', strtotime($block['date']))) {
 			case '1': $day = 'Понедельник'; break;
 			case '2': $day = 'Вторник'; break;
 			case '3': $day = 'Среда'; break;
@@ -267,13 +254,29 @@
 				$data1 = database_query($query);
 				if (($comment = mysql_fetch_assoc($data1)) && ($comment['important'] >= 0)) { // Если important < 0, то коммент удалён
 
+					switch (date('n', strtotime($comment['added']))) {
+						case '1':  $mon = 'января'; break;
+						case '2':  $mon = 'февраля'; break;
+						case '3':  $mon = 'марта'; break;
+						case '4':  $mon = 'апреля'; break;
+						case '5':  $mon = 'мая'; break;
+						case '6':  $mon = 'июня'; break;
+						case '7':  $mon = 'июля'; break;
+						case '8':  $mon = 'августа'; break;
+						case '9':  $mon = 'сентября'; break;
+						case '10': $mon = 'октября'; break;
+						case '11': $mon = 'ноября'; break;
+						case '12': $mon = 'декабря'; break;
+					}
+
 					/* Расшифрованные данные на выход */
 					$comments[] = array('queue' => $i++,
 					                    'author' => user_info($comment['author']),
-					                    'added' => $comment['added'],
+					                    'added' => date('j '.$mon.' Y в H:i', strtotime($comment['added'])),
 					                    'content' => $comment['content'],
 					                    'attachments' => attachments_data($comment['attachments']),
-					                    'important' => $comment['important']);
+					                    'important' => $comment['important'],
+					                    'id' => $comment['id']);
 				}
 			}
 		}
