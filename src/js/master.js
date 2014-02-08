@@ -55,7 +55,7 @@ function buildBlocks(raw_data) {
 
 	/* Добавление новых блоков в дисплей */
 	if (data.timepunk == 'init') {
-		display.blocks = display.blocks.concat(data.blocks);
+		display.blocks = data.blocks;
 
 		/* С первой загрузкой также передаются даты начала и конца всей ленты */
 		display.first = data.first;
@@ -85,10 +85,8 @@ function buildBlocks(raw_data) {
 	/* Формат анимации загруженных блоков */
 	switch (data.timepunk) {
 		case 'init':   initAnimate(); break; // Первая загрузка
-		case 'next':   stepAnimate('next'); break; // Следующий набор блоков
-		case 'prev':   stepAnimate('prev'); break; // Предыдущий набор блоков
-		case 'future': jumpAnimate('front'); break; // Прыжок вперёд
-		case 'past':   jumpAnimate('behind'); break; // Прыжок назад
+		case 'next':   stepAnimate('next'); break; // Следующий блок
+		case 'prev':   stepAnimate('prev'); break; // Предыдущий блок
 		case 'add':    addAnimate(start); break; // Догрузка в случае появления свободного места
 	}
 
@@ -163,8 +161,10 @@ function makeCommentElement(block, lesson, comment) {
 	return element;
 }
 
-function makeCommentForm() {
-	var element = $('<div id="form"><div id="text"><textarea></textarea><div id="attach"></div></div><div id="controls"><div id="important"><input type="checkbox">&nbsp;<label>Задание</label></div><div id="submit" class="button">Добавить</div></div></div>');
+function makeCommentForm(block, lesson) {
+	var element = $('<div id="form"><div id="text"><textarea placeholder="Комментарий, объявление или домашнее задание..."></textarea><div id="attached"></div></div><div id="controls"><button id="attach" class="button light">Прикрепить файл</button><div id="important"><input type="checkbox">&nbsp;<label>Задание</label></div><button id="submit" class="button">Добавить</button></div></div>');
+	$(element).find('#attach').click(function() { attachToComment(); }); // Прикрепление файлов
+	$(element).find('#submit').click(function() { submitComment(block, lesson); }); // Добавление комментария
 	return element;
 }
 
@@ -185,9 +185,6 @@ function loadStep(direction) {
 		}
 	}
 }
-
-/* Прыжок к заданной дате */
-function loadJump() {}
 
 //-----------------------------------------------------------------------------
 /* 4. Просмотр и добавление комментариев */
@@ -214,51 +211,64 @@ function openCommentsViewer(block, lesson) {
 	}
 
 	/* Есть пользователь залогинен - он может добавлять контент */
-	if (user.logged) $(wrapper).append(makeCommentForm());
+	if (user.logged) $(wrapper).append(makeCommentForm(block, lesson));
 
 	/* Открыть виджет lightbox c нашими данными */
 	lightbox.show(wrapper);
-	if (user.logged) activateCommentForm(block, lesson);
 }
 
-/* Работа с формой добавления комментариев */
-function activateCommentForm(block, lesson) {
+/* Прикрепление файла к комментарию */
+function attachToComment() {
 
-	/* Добавление комментария */
-	$('#comments #form #submit').click(function() {
+	/* Создаём скрытый file input для загрузки файла */
+	var input = $('<input type="file" style="height: 1px; opacity: 0; position: absolute; width: 1px;">');
+	$('#comments #form').append(input);
 
-		if (!display.busy) {
-			display.setBusyState(true);
-
-			/* Готовим информацию для создания нового комментария */
-			var text = $('#comments #form #text textarea').val();
-			var important = $('#comments #form #important input').is(':checked');
-			var to = block.date+','+lesson.queue;
-
-			/* Отправляем асинхронный запрос */
-			$.post('/engine/ajax.php', { comment: text, important: important, attached: '', to: to, token: user.token }, function(data) {
-				display.setBusyState(false);
-
-				/* Получаем обработанный вариант комментария уже из базы данных */
-				var new_comment = JSON.parse(data);
-
-				/* Добавляем новый комментарий в дисплей */
-				lesson.comments.push(new_comment[0]);
-
-				/* Отображаем новый комментарий в расписаниях */
-				$(block.element).find('.lesson.l'+lesson.queue).replaceWith(makeLessonElement(lesson));
-				activateCommentsViewer(block);
-
-				/* Отображаем новый комментарий в открытом нынче лайтбоксе */
-				$('#lightbox #comments #form').before(makeCommentElement(block, lesson, new_comment[0]));
-				lightbox.resize('slide'); // Размеры лайтбокса при этом меняются
-
-				/* Очищаем форму, на случай необходимости добавить ещё один комментарий */
-				$('#comments #form #text textarea').val('');
-				$('#comments #form #important input').prop('checked', false);
-			});
-		}
+	$(input).change(function() {
+		var file = this.files[0];
+		var name = file.name;
+		var size = file.size;
+		var type = file.type;
 	});
+
+	$(input).click();
+}
+
+/* Добавление комментария */
+function submitComment(block, lesson) {
+
+	/* Если дисплей свободен */
+	if (!display.busy) {
+		display.setBusyState(true);
+
+		/* Готовим информацию для создания нового комментария */
+		var text = $('#comments #form #text textarea').val();
+		var important = $('#comments #form #important input').is(':checked');
+		var to = block.date+','+lesson.queue;
+
+		/* Отправляем асинхронный запрос */
+		$.post('/engine/ajax.php', { comment: text, important: important, attached: '', to: to, token: user.token }, function(data) {
+			display.setBusyState(false);
+
+			/* Получаем обработанный вариант комментария уже из базы данных */
+			var new_comment = JSON.parse(data);
+
+			/* Добавляем новый комментарий в дисплей */
+			lesson.comments.push(new_comment[0]);
+
+			/* Отображаем новый комментарий в расписаниях */
+			$(block.element).find('.lesson.l'+lesson.queue).replaceWith(makeLessonElement(lesson));
+			activateCommentsViewer(block);
+
+			/* Отображаем новый комментарий в открытом нынче лайтбоксе */
+			$('#lightbox #comments #form').before(makeCommentElement(block, lesson, new_comment[0]));
+			lightbox.resize('slide'); // Размеры лайтбокса при этом меняются
+
+			/* Очищаем форму, на случай необходимости добавить ещё один комментарий */
+			$('#comments #form #text textarea').val('');
+			$('#comments #form #important input').prop('checked', false);
+		});
+	}
 }
 
 /* Удаление комментария */
@@ -433,9 +443,6 @@ function unslideEdge() {
 	display.edged = 0;
 	correctNavigation();
 }
-
-/* Анимация прыжка к заданной дате */
-function jumpAnimate(direction) { }
 
 /* Анимация догрузки блоков в случае появления свободного пространства */
 function addAnimate(start) {
