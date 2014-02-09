@@ -71,14 +71,24 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 #comments .comment .content .name { border-bottom: 1px solid #ccc; color: #000; font: bold 12px "Arial"; line-height: 16px; margin-bottom: 3px; padding-bottom: 2px; }
 #comments .comment .content .added { color: #999; font: 11px "Arial"; line-height: 16px; position: absolute; right: 6px; top: 0; }
 #comments .comment .content .text { color: #333; font: 13px "Arial"; margin: 4px 0 8px; }
-#comments .comment .content .controls { font: 11px "Arial"; padding: 0 1px; }
+#comments .comment .content .attachments { list-style: none; }
+#comments .comment .content .attachments LI { height: 18px; margin-bottom: 5px; }
+#comments .comment .content .attachments LI A { background: url(images/iconset.png) no-repeat 0 -140px; color: #2D6C9E; display: inline-block; font: 11px "Arial"; line-height: 18px; padding-left: 21px; }
+#comments .comment .content .attachments LI A:hover { text-decoration: underline; }
+#comments .comment .content .controls { font: 11px "Arial"; padding: 3px 1px 0; }
 #comments .comment .content .controls A { color: #999; }
 #comments .comment .content .controls A:hover { text-decoration: underline; }
 #comments .comment .content .controls A.red:hover { color: #BD0000 !important; }
 
-#comments #form #text { background: #F7F7F7; border: 1px solid #B1B1B1; height: 60px; margin-bottom: 8px; padding: 5px; }
-#comments #form #text TEXTAREA { font: 12px "Arial"; height: 60px; resize: none; width: 100%; }
-#comments #form #attached {}
+#comments #form #text { border: 1px solid #B1B1B1; -webkit-box-shadow: inset 0px 0px 0px 5px #F7F7F7; -moz-box-shadow: inset 0px 0px 0px 5px #F7F7F7; box-shadow: inset 0px 0px 0px 5px #F7F7F7; margin-bottom: 8px; padding: 5px; }
+#comments #form #text TEXTAREA { font: 12px "Arial"; height: 60px; resize: none; vertical-align: bottom; width: 100%; }
+#comments #form #attached { font: 11px "Arial"; list-style: none; }
+#comments #form #attached LI { line-height: 18px; height: 18px; margin-top: 3px; }
+#comments #form #attached LI .progress { background: #ddd; border: 1px solid #555; border-radius: 3px; -moz-border-radius: 3px; -webkit-border-radius: 3px; display: inline-block; height: 12px; margin-right: 8px; position: relative; vertical-align: middle; width: 80px; }
+#comments #form #attached LI .progress DIV { background: #0090C9; bottom: 1px; left: 1px; position: absolute; top: 1px; }
+#comments #form #attached LI.done { background: url(images/iconset.png) no-repeat 0 -140px; padding-left: 21px; }
+#comments #form #attached LI.done .remove { color: #aaa; font: 10px "Arial"; margin-left: 6px; }
+#comments #form #attached LI.done .remove:hover { color: #BD0000 !important; text-decoration: underline; }
 #comments #form #controls { position: relative; height: 26px; }
 #comments #form #controls #attach { position: absolute; left: 8px; text-align: center; width: 145px; }
 #comments #form #controls #important { position: absolute; line-height: 26px; right: 105px; width: 90px; }

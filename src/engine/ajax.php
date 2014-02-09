@@ -109,10 +109,12 @@
 			/* Если блок найден, создаём комментарий и добавляем его */
 			if ($block = mysql_fetch_assoc($data1)) {
 
-				/* Создаём новый комментарий */
+				/* Готовим информацию */
 				$important = 0;
 				if ($_POST['important'] == 'true') $important = 1;
-				$query = "INSERT INTO `comments` (`id`, `content`, `attachments`, `important`, `added`, `author`) VALUES (NULL, '".addslashes($_POST['comment'])."', '', '".$important."', NOW(), '".$user['id']."')";
+
+				/* Создаём новый комментарий */	
+				$query = "INSERT INTO `comments` (`id`, `content`, `attachments`, `important`, `added`, `author`) VALUES (NULL, '".addslashes($_POST['comment'])."', '".addslashes($_POST['attached'])."', '".$important."', NOW(), '".$user['id']."')";
 				database_query($query);
 
 				/* Получаем идентификатор нового комментария и модифицируем данные блока */
@@ -299,6 +301,13 @@
 	/* Прикреплённые файлы */
 	function attachments_data($list) {
 		$data = array();
+		foreach (explode(',', $list) as $file_id) {
+			$query = "SELECT * FROM `files` WHERE `id` = '$file_id'";
+			$data1 = database_query($query);
+			if ($file = mysql_fetch_assoc($data1)) {
+				$data[] = array('src' => 'uploads/'.$file['file'], 'caption' => $file['caption']);
+			}
+		}
 		return $data;
 	}
 

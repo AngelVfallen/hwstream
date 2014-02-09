@@ -156,13 +156,13 @@ function makeCommentElement(block, lesson, comment) {
 	}
 
 	comment.attachments.forEach(function(attached) { // Прикреплённые файлы
-		//$(element).find('.attachments').append('<li class="'+attached.icon+'">'+attached.caption+'</li>');
+		$(element).find('.attachments').append('<li><a href="'+attached.src+'" target="_blank" title="Загрузить файл">'+attached.caption+'</a></li>');
 	});
 	return element;
 }
 
 function makeCommentForm(block, lesson) {
-	var element = $('<div id="form"><div id="text"><textarea placeholder="Комментарий, объявление или домашнее задание..."></textarea><div id="attached"></div></div><div id="controls"><button id="attach" class="button light">Прикрепить файл</button><div id="important"><input type="checkbox">&nbsp;<label>Задание</label></div><button id="submit" class="button">Добавить</button></div></div>');
+	var element = $('<div id="form"><div id="text"><textarea placeholder="Комментарий, объявление или домашнее задание..."></textarea><ul id="attached"></ul></div><div id="controls"><button id="attach" class="button light">Прикрепить файл</button><div id="important"><input type="checkbox">&nbsp;<label>Задание</label></div><button id="submit" class="button">Добавить</button></div></div>');
 	$(element).find('#attach').click(function() { attachToComment(); }); // Прикрепление файлов
 	$(element).find('#submit').click(function() { submitComment(block, lesson); }); // Добавление комментария
 	return element;
@@ -220,18 +220,72 @@ function openCommentsViewer(block, lesson) {
 /* Прикрепление файла к комментарию */
 function attachToComment() {
 
-	/* Создаём скрытый file input для загрузки файла */
-	var input = $('<input type="file" style="height: 1px; opacity: 0; position: absolute; width: 1px;">');
-	$('#comments #form').append(input);
+	/* Создаём виртуальную форму для загрузки файла */
+	var input = $('<input name="fileinput" type="file" style="height: 1px; opacity: 0; position: absolute; width: 1px;">');
+	var form = $('<form enctype="multipart/form-data"><input name="token" type="hidden" value="'+user.token+'"></form>');
+	$(form).append(input);
 
+	/* Когда файл выбран - загружаем его на сервер */
 	$(input).change(function() {
-		var file = this.files[0];
-		var name = file.name;
-		var size = file.size;
-		var type = file.type;
+
+		/* Добавляем индикатор прогресса загружаемого файла */
+		var filename = this.files[0].name.replace(/'/g, '\\');
+		var element = $('<li>'+filename+'</li>');
+		var progressbar = $('<div class="progress"><div></div></div>');
+		$(element).prepend(progressbar);
+		$('#attached').append(element);
+		lightbox.resize('slide');
+
+		/* Получаем данные нашей виртуальной формы */
+		var formData = new FormData($(form)[0]);
+
+		/* Делаем асинхронный запрос загрузки */
+		$.ajax({
+			url: 'engine/upload.php',
+			type: 'POST',
+			data: formData,
+
+			/* В случае успешной загрузки */
+			success: function(raw_data) {
+				var data = JSON.parse(raw_data);
+				if (data.id) { // Файл принят и добавлен в БД
+					$(progressbar).remove();
+					var remove = $('<a href="#" class="remove" title="Удалить приложенный файл">Удалить</a>');
+					$(remove).click(function() { $(element).slideUp(200, function() { $(this).remove(); lightbox.resize('slide'); }); });
+					$(element).addClass('done').attr('data', data.id).append(remove);
+				} else { // Ошибка
+					if (data.err) alert(data.err);
+
+					$(element).fadeOut(2000, function() { $(this).remove(); });
+				}
+			},
+
+			/* Отслеживание прогресса загрузки */
+			xhr: function() {
+				var myXhr = $.ajaxSettings.xhr();
+				if(myXhr.upload){ // Проверка поддержки
+				    myXhr.upload.addEventListener('progress', function(e) { attachProgress(e, progressbar); }, false);
+				}
+				return myXhr;
+			},
+
+			/* Параметры, запрещающие вмешиваться jQuery в процесс загрузки */
+			cache: false,
+			contentType: false,
+			processData: false
+		});
 	});
 
 	$(input).click();
+}
+
+/* Отслеживание прогресса загрузки файла */
+function attachProgress(e, progressbar) {
+	if(e.lengthComputable){
+		var total = 78;
+		var value = (e.loaded/e.total)*total;
+		$(progressbar).find('div').animate({ width: value+'px' }, 200);
+	}
 }
 
 /* Добавление комментария */
@@ -244,10 +298,14 @@ function submitComment(block, lesson) {
 		/* Готовим информацию для создания нового комментария */
 		var text = $('#comments #form #text textarea').val();
 		var important = $('#comments #form #important input').is(':checked');
+		var attached = [];
 		var to = block.date+','+lesson.queue;
+		$('#comments #form #text #attached LI.done').each(function() {
+			attached.push($(this).attr('data'));
+		});
 
 		/* Отправляем асинхронный запрос */
-		$.post('/engine/ajax.php', { comment: text, important: important, attached: '', to: to, token: user.token }, function(data) {
+		$.post('/engine/ajax.php', { comment: text, important: important, attached: attached.join(','), to: to, token: user.token }, function(data) {
 			display.setBusyState(false);
 
 			/* Получаем обработанный вариант комментария уже из базы данных */
@@ -267,6 +325,7 @@ function submitComment(block, lesson) {
 			/* Очищаем форму, на случай необходимости добавить ещё один комментарий */
 			$('#comments #form #text textarea').val('');
 			$('#comments #form #important input').prop('checked', false);
+			$('#comments #form #text #attached').html('');
 		});
 	}
 }
