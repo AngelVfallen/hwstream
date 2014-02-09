@@ -106,8 +106,19 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 .button.light:hover { background-color: #eee; background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#ddd)); background-image: -moz-linear-gradient(#fff, #ddd); background-image: -o-linear-gradient(#fff, #ddd); background-image: linear-gradient(#fff, #ddd); }
 
 #display.widget { text-align: center; }
-#widget_wrapper { border: 16px solid rgba(0,0,0,0.6); border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px; }
-#widget_wrapper.library { background: #fff; max-width: 1024px; width: 100%; margin: 50px auto 30px; }
-#widget_wrapper #library { }
-#widget_wrapper.map { background: rgba(0,0,0,0.6); display: inline-block; margin: 50px 15px 30px; }
-#widget_wrapper.map IMG { border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; max-width: 1024px; vertical-align: bottom; width: 100%; }
+#widget_wrapper { background: rgba(0,0,0,0.6); border: 16px solid rgba(0,0,0,0.6); border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px; }
+#widget_wrapper .inner { border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; }
+#widget_wrapper.library { max-width: 1024px; width: 100%; margin: 50px auto 30px; text-align: left; }
+#widget_wrapper #library { background: #fff; }
+#widget_wrapper #library .tags { font: 13px "Arial"; }
+#widget_wrapper #library .tags .button { font: 13px "Arial"; margin-left: 6px; padding: 3px 12px; }
+#widget_wrapper #library #annotation { padding: 15px 15px 0; }
+#widget_wrapper #library #annotation P { font: 12px "Arial"; margin-bottom: 8px; }
+#widget_wrapper #library #content { padding: 15px; }
+#widget_wrapper #library #content .caption { font: 16px "Times New Roman"; }
+#widget_wrapper #library #content .files { list-style: none; }
+#widget_wrapper #library #content .files LI { height: 18px; margin-bottom: 5px; }
+#widget_wrapper #library #content .files LI A { background: url(images/iconset.png) no-repeat 0 -140px; color: #2D6C9E; display: inline-block; font: 11px "Arial"; line-height: 18px; padding-left: 21px; }
+#widget_wrapper #library #content .files LI A:hover { text-decoration: underline; }
+#widget_wrapper.map { display: inline-block; margin: 50px 15px 30px; text-align: center; }
+#widget_wrapper.map IMG { max-width: 1024px; vertical-align: bottom; width: 100%; }
