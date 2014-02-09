@@ -106,5 +106,8 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 .button.light:hover { background-color: #eee; background-image: -webkit-gradient(linear, 0 0, 0 100%, from(#fff), to(#ddd)); background-image: -moz-linear-gradient(#fff, #ddd); background-image: -o-linear-gradient(#fff, #ddd); background-image: linear-gradient(#fff, #ddd); }
 
 #display.widget { text-align: center; }
-#widget_wrapper { background: rgba(0,0,0,0.6); border: 16px solid rgba(0,0,0,0.6); border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px; display: inline-block; margin: 50px 15px 30px; }
-#widget_wrapper #map { border: 1px solid #000; border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; display: inline-block; }
+#widget_wrapper { border: 16px solid rgba(0,0,0,0.6); border-radius: 7px; -moz-border-radius: 7px; -webkit-border-radius: 7px; }
+#widget_wrapper.library { background: #fff; max-width: 1024px; width: 100%; margin: 50px auto 30px; }
+#widget_wrapper #library { }
+#widget_wrapper.map { background: rgba(0,0,0,0.6); display: inline-block; margin: 50px 15px 30px; }
+#widget_wrapper.map IMG { border-radius: 4px; -moz-border-radius: 4px; -webkit-border-radius: 4px; max-width: 1024px; vertical-align: bottom; width: 100%; }

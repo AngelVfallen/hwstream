@@ -1,6 +1,6 @@
 <?php include('header.php'); ?>
 		<div id="display" class="widget">
-			<div id="widget_wrapper" class="map"><?php echo widget_map(); ?></div>
+			<div id="widget_wrapper" class="library"><?php echo widget_library(); ?></div>
 		</div>
 		
 		<script type="text/javascript" src="js/jquery-2.0.3.min.js"></script>

@@ -1,8 +1,13 @@
 <?php
 
+	function widget_library()
+	{
+		return '<div id="library"></div>';
+	}
+
 	function widget_map()
 	{
-		return '<img id="map" src="uploads/map.jpg" style="width: 100%; max-width: 1024px; vertical-align: bottom;">';
+		return '<img src="uploads/map.jpg">';
 	}
 
 ?>
