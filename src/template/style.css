@@ -66,7 +66,7 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 
 #comments .comment { margin-bottom: 20px; }
 #comments .comment .avatar { float: left; padding: 1px; border: 1px solid #ccc; }
-#comments .comment .avatar IMG { vertical-align: bottom; }
+#comments .comment .avatar IMG { height: 54px; vertical-align: bottom; width: 54px; }
 #comments .comment .content { margin-left: 63px; position: relative; }
 #comments .comment .content .name { border-bottom: 1px solid #ccc; color: #000; font: bold 12px "Arial"; line-height: 16px; margin-bottom: 3px; padding-bottom: 2px; }
 #comments .comment .content .added { color: #999; font: 11px "Arial"; line-height: 16px; position: absolute; right: 6px; top: 0; }

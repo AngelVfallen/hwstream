@@ -1,9 +1,9 @@
 <?php
 
-	$host = 'host';
-	$client_id = 'client_id';
-	$client_secret = 'client_secret';
-	$group_id = 'group_id';
+	$host = 'http://va32kpi.ru';
+	$client_id = '4099924';
+	$client_secret = '8wkIisOzZTlpYwGPkaRf';
+	$group_id = '57799683';
 
 	if(isset($_GET['code'])) {
 
@@ -42,7 +42,7 @@
 				}
 				/* Если же нет, то узнать его имя и добавить в базу данных */
 				else {
-					$ch = curl_init("https://api.vk.com/method/users.get?uids=$result->user_id&lang=ru");
+					$ch = curl_init("https://api.vk.com/method/users.get?uids=$result->user_id&fields=photo_100&lang=ru");
 					curl_setopt($ch, CURLOPT_HEADER, 0);
 					curl_setopt($ch, CURLOPT_RETURNTRANSFER, 1);
 					$answer = curl_exec($ch);
@@ -51,7 +51,7 @@
 					$user_name = $user_name_array->response[0];
 
 					/* После логина пользователь сразу получаем права (permissions) полноценного пользователя (user) */
-					$query = "INSERT INTO `users` (`id`, `user_id`, `token`, `name`, `perms`) VALUES (NULL, '$result->user_id', '$result->access_token', '$user_name->first_name $user_name->last_name', 'user')";
+					$query = "INSERT INTO `users` (`id`, `user_id`, `token`, `name`, `avatar`, `perms`) VALUES (NULL, '$result->user_id', '$result->access_token', '$user_name->first_name $user_name->last_name', '$user_name->photo_100', 'user')";
 					database_query($query);
 				}
 
