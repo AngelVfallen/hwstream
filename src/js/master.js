@@ -51,43 +51,56 @@ function loadBlocks(query) {
 
 /* Отображение загруженных блоков */
 function buildBlocks(raw_data) {
+
+	/* Данные приходят в формате JSON, разбираем встроенной функцией */
 	var data = JSON.parse(raw_data);
 
 	/* Добавление новых блоков в дисплей */
-	if (data.timepunk == 'init') {
-		display.blocks = data.blocks;
-
-		/* С первой загрузкой также передаются даты начала и конца всей ленты */
-		display.first = data.first;
-		display.last = data.last;
-	}
-	else if (data.timepunk == 'next') {
-		$(display.blocks[0].element).remove();
-		display.blocks.splice(0, 1);
-		display.blocks.forEach(function(block) { block.queue--; });
-		display.blocks = display.blocks.concat(data.blocks);
-	}
-	else if (data.timepunk == 'prev') {
-		if (!((display.blocks[display.blocks.length-1].date == display.last) &&
-		   ((display.blocks[display.blocks.length-1].queue+1)) < display.capacity))
-		{
-			$(display.blocks[display.blocks.length-1].element).remove();
-			display.blocks.splice(display.blocks.length-1, 1);
-		}
-		display.blocks.forEach(function(block) { block.queue++; });
-		display.blocks = data.blocks.concat(display.blocks);
-	}
-	else if (data.timepunk == 'add') {
-		var start = display.blocks.length;
-		display.blocks = display.blocks.concat(data.blocks);
-	}
-
-	/* Формат анимации загруженных блоков */
 	switch (data.timepunk) {
-		case 'init':   initAnimate(); break; // Первая загрузка
-		case 'next':   stepAnimate('next'); break; // Следующий блок
-		case 'prev':   stepAnimate('prev'); break; // Предыдущий блок
-		case 'add':    addAnimate(start); break; // Догрузка в случае появления свободного места
+		case 'init': { // Первая загрузка
+
+			/* Весь дисплей загружается блоками */
+			display.blocks = data.blocks;
+
+			/* С первой загрузкой также передаются даты начала и конца всей ленты */
+			display.first = data.first;
+			display.last = data.last;
+
+			/* Анимация первой загрузки */
+			initAnimate();
+			break;
+		}
+		case 'next': { // Следующий блок
+
+			/* Добавляем новый блок в конец массива, анимируем */
+			display.blocks.forEach(function(block) { block.queue--; });
+			display.blocks = display.blocks.concat(data.blocks);
+			stepAnimate('next');
+
+			/* Удаляем скрывшийся элемент */
+			if (display.blocks[0].queue == -2) display.blocks.splice(0, 1);
+			break;
+		}
+		case 'prev': { // Предыдущий блок
+
+			/* Добавляем новый блок в начало массива, анимируем */
+			display.blocks.forEach(function(block) { block.queue++; });
+			display.blocks = data.blocks.concat(display.blocks);
+			stepAnimate('prev');
+
+			/* Удаляем скрывшийся элемент */
+			if (!((display.blocks[display.blocks.length-1].date == display.last) &&
+			   ((display.blocks[display.blocks.length-1].queue)) <= display.capacity)) {
+				display.blocks.splice(display.blocks.length-1, 1);
+			}
+			break;
+		}
+		case 'add': { // Догрузка в случае появления свободного места
+			var start = display.blocks.length;
+			display.blocks = display.blocks.concat(data.blocks);
+			addAnimate(start);
+			break;
+		}
 	}
 
 	/* Корректируем состояние управляющих элементов */
@@ -163,7 +176,7 @@ function makeCommentElement(block, lesson, comment) {
 
 function makeCommentForm(block, lesson) {
 	var element = $('<div id="form"><div id="text"><textarea placeholder="Комментарий, объявление или домашнее задание..."></textarea><ul id="attached"></ul></div><div id="controls"><button id="attach" class="button light">Прикрепить файл</button><div id="important"><input type="checkbox">&nbsp;<label>Задание</label></div><button id="submit" class="button">Добавить</button></div></div>');
-	$(element).find('#attach').click(attachFile); // Прикрепление файлов
+	$(element).find('#attach').click(attachFile); // Прикрепление файлов, @widgets.js
 	$(element).find('#submit').click(function() { submitComment(block, lesson); }); // Добавление комментария
 	return element;
 }
@@ -326,6 +339,21 @@ function stepAnimate(direction) {
 	$(display.blocks).each(function() {
 		$(this.element).animate({'left': (display.margin_left+((display.block_width+display.block_margin)*(this.queue*1)))+'px'}, 500);
 	});
+
+	/* Убираем лишние элементы после анимации  */
+	if ((direction == 'next') && (display.blocks[0].queue == -2)) { // За левым бортом
+		$(display.blocks[0].element).animate({'left': (display.margin_left+((display.block_width+display.block_margin)*(this.queue*1)))+'px'}, 500, function() {
+			$(this).remove();
+		});
+	}
+	// За правым бортом
+	else if ((direction == 'prev') && !((display.blocks[display.blocks.length-1].date == display.last) &&
+	   ((display.blocks[display.blocks.length-1].queue)) <= display.capacity))
+	{
+		$(display.blocks[display.blocks.length-1].element).animate({'left': (display.margin_left+((display.block_width+display.block_margin)*(this.queue*1)))+'px'}, 500, function() {
+			$(this).remove();
+		});
+	}
 }
 
 /* Скольжение до правого края, чтобы показать последний блок */

@@ -1,3 +1,12 @@
+/*
+	Homework Stream, v1.0
+	http://github.com/asleepwalker/hwstream
+
+	by Artyom "Sleepwalker" Fedosov, 2014
+	http://me.asleepwalker.ru/
+	mail@asleepwalker.ru
+*/
+
 /* Переменные для пользователя */
 var user = { logged: $('#logged').val() };
 if (user.logged) {
