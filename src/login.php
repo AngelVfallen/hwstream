@@ -1,9 +1,9 @@
 <?php
 
-	$host = 'http://va32kpi.ru';
-	$client_id = '4099924';
-	$client_secret = '8wkIisOzZTlpYwGPkaRf';
-	$group_id = '57799683';
+	$host = 'host';
+ -	$client_id = 'client_id';
+ -	$client_secret = 'client_secret';
+ -	$group_id = 'group_id';
 
 	if(isset($_GET['code'])) {
 
