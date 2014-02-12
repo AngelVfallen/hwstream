@@ -1,7 +1,55 @@
 <?php
 
+	if (((isset($_POST['caption']) && isset($_POST['add']) && isset($_POST['text']) && isset($_POST['tags'])) || isset($_POST['remove_item'])) && isset($_POST['token'])) {
+
+		/* Подключаемся к базе данных */
+		include('database.php');
+		database_connect();
+
+		$data = array();
+
+		/* Прежде всего проверим пользователя */
+		$query = "SELECT * FROM  `users` WHERE `token` = '".addslashes($_POST['token'])."'";
+		$data1 = database_query($query);
+
+		/* Если пользователь с таким token есть в базе данных */
+		if ($user = mysql_fetch_assoc($data1)) {
+
+			/* Добавление в библиотеку */
+			if (isset($_POST['caption']) && isset($_POST['add']) && isset($_POST['text']) && isset($_POST['tags'])) {
+
+				/* Создаём новый комментарий */	
+				$query = "INSERT INTO `library` (`id`, `caption`, `content`, `attachments`, `tags`, `date`, `author`) VALUES (NULL, '".addslashes($_POST['caption'])."', '".addslashes($_POST['text'])."', '".addslashes($_POST['add'])."', '".addslashes($_POST['tags'])."', NOW(), '".$user['id']."')";
+				database_query($query);
+
+				/* Получаем идентификатор нового комментария и модифицируем данные блока */
+				$item_it = mysql_insert_id();
+
+				/* Перенаправляем с анкором на новую запись */
+				$data['target'] = '?module=library#i'.$item_it;
+			}
+			else if (isset($_POST['remove_item'])) {
+
+				/* Удаляем запись */
+				$query = "DELETE FROM `library` WHERE `id` = '".addslashes($_POST['remove_item'])."'";
+				database_query($query);
+
+				/* Перенаправляем в корень библиотеки */
+				$data['target'] = '?module=library';
+			}
+		} else { // Если пользователь не найден
+			$data['err'] = 'Ошибка доступа.';
+		}
+
+		/* Завершаем работу с базой данных */
+		database_disconnect();
+
+		/* Отправляем результат пользователю */
+		echo json_encode($data);
+	}
+
 	function widget_library() {
-		
+
 		/* Общее количество файлов */
 		$query = "SELECT COUNT(`id`) FROM `library`";
 		$data1 = database_query($query);
@@ -11,7 +59,7 @@
 		/* Постройка блоков */
 		$library = array();
 		$query = "SELECT * FROM `library`";
-		if (isset($_GET['filter'])) { $query .= " WHERE `tags` = '".addslashes($_GET['filter'])."'"; }
+		if (isset($_GET['filter'])) { $query .= " WHERE `tags` LIKE '%".addslashes($_GET['filter'])."%'"; }
 		$query .= ' ORDER BY `date` DESC';
 		$data1 = database_query($query);
 		while ($block = mysql_fetch_assoc($data1)) {
@@ -20,9 +68,9 @@
 			$files = array();
 			foreach (explode(',', $block['attachments']) as $file_id) {
 				$query = "SELECT * FROM `files` WHERE `id` = '$file_id'";
-				$data1 = database_query($query);
-				if ($file = mysql_fetch_assoc($data1)) {
-					$files[] = '<li><a href="uploads/'.$file['file'].'" target="_blank" title="Загрузить файл">'.$file['caption'].'</a></li>';
+				$data2 = database_query($query);
+				if ($file = mysql_fetch_assoc($data2)) {
+					$files[] = '<li><a href="uploads/'.$file['file'].'" target="_blank" title="Загрузить файл">'.$file['caption'].'</a> <span class="filesize">('.widget_size($file['size']).')</span></li>';
 				}
 			}
 
@@ -50,16 +98,20 @@
 			$added = date('j '.$mon.' Y в H:i', strtotime($block['date']));
 
 			/* Автор блока */
-			$controls = '';
 			$author = 'DELETED';
 			$query = "SELECT * FROM `users` WHERE `id` = '".$block['author']."'";
-			$data1 = database_query($query);
-			if ($user = mysql_fetch_assoc($data1)) {
+			$data3 = database_query($query);
+			if ($user = mysql_fetch_assoc($data3)) {
 				$author = '<b>'.$user['name'].'</b>';
-				if ($user['id'] == $block['author']) $controls = '<p class="controls"><a id="remove" href="#" title="Удалить из библиотеки">Удалить</a></p>';
 			}
 
-			$library[] = '<div class="item">
+			/* Кнопки управления */
+			$controls = '';
+			if (isset($GLOBALS['user']) && ($GLOBALS['user']['id'] == $block['author'])) {
+				$controls = '<p class="controls"><a id="remove" href="#" data-id="'.$block['id'].'" title="Удалить из библиотеки">Удалить</a></p>';
+			}
+
+			$library[] = '<div id="i'.$block['id'].'" class="item">
 			<p class="caption">'.$block['caption'].'<span class="added">'.$added.' от '.$author.'</span></p>
 			<div class="text">'.$block['content'].'</div>
 			<ul class="files">'.implode('', $files).'</ul>
@@ -100,6 +152,20 @@
 			<div id="lb_left" class="darkenZoneLB"></div>
 			<div id="lb_right" class="darkenZoneLB"></div>
 		</div>';
+	}
+
+	function widget_size($size) {
+
+		// Байты
+		if ($size < 1024) return $size.' б';
+		else $size = round(($size/1024));
+
+		// Килобайты
+		if ($size < 1024) return $size.' кб';
+		else $size = round(($size/1024), 2);
+
+		// Мегабайты
+		return $size.' мб';
 	}
 
 ?>

@@ -81,13 +81,54 @@ lightbox.resize = function(type) {
 
 /* Добавление в библиотеку */
 $('#library #add.button').click(function() {
-	var form = $('<div id="libform"><ul id="attached"><li class="descr">Прикрепите файл(ы) для добавления в библиотеку.</li></ul><label>Описание:</label><div class="text"><textarea placeholder="Кратко опишите содержимое прикрепляемых файлов"></textarea></div><label>Метки:</label><div class="text"><input id="tags" type="text" placeholder="Через пробел или запятую"></div><ul id="attached"></ul><div id="controls"><button id="attach" class="button light">Прикрепить файл</button><button id="submit" class="button">Сохранить</button></div></div>');
+	var form = $('<div id="libform"><label>Заголовок:</label><div class="text"><input id="caption" type="text"></div><ul id="attached"><li class="descr">Прикрепите файл(ы) для добавления в библиотеку.</li></ul><label>Описание:</label><div class="text"><textarea id="libcontent" placeholder="Кратко опишите содержимое прикрепляемых файлов"></textarea></div><label>Метки:</label><div class="text"><input id="tags" type="text" placeholder="Через пробел или запятую"></div><div id="controls"><button id="attach" class="button light">Прикрепить файл</button><button id="submit" class="button">Сохранить</button></div></div>');
 	$(form).find('#attach').click(attachFile);
+	$(form).find('#submit').click(saveToLibrary);
+
 	/* Открыть виджет lightbox c нашими данными */
 	lightbox.show(form);
 });
 
+/* Удаление из библиотеки */
+$('#library #remove').click(function() {
+
+	/* Отправляем асинхронный запрос */
+	$.post('/engine/widgets.php', { remove_item: $(this).attr('data-id'), token: user.token }, function(data) {
+
+		var result = JSON.parse(data);
+		if (result.target != '') {
+			window.location.href = result.target;
+			window.location.replace('http:');
+		} else {
+			alert(result.err);
+		}
+	});
+});
+
 /* Сохранение в библиотеку */
+function saveToLibrary() {
+
+	var attached = [];
+	var caption = $('#libform #caption').val();
+	var text = $('#libform #libcontent').val();
+	var tags = $('#libform #tags').val();
+
+	$('#attached LI.done').each(function() {
+		attached.push($(this).attr('data'));
+	});
+
+	/* Отправляем асинхронный запрос */
+	$.post('/engine/widgets.php', { add: attached.join(','), caption: caption, text: text, tags: tags, token: user.token }, function(data) {
+
+		var result = JSON.parse(data);
+		if (result.target != '') {
+			window.location.href = result.target;
+		} else {
+			alert(result.err);
+		}
+	});
+}
+
 /* Удаление из библиотеки */
 
 //-----------------------------------------------------------------------------

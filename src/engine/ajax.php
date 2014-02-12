@@ -2,6 +2,7 @@
 
 	/* Подключаемся к базе данных */
 	include('database.php');
+	include('widgets.php');
 	database_connect();
 
 	/* Запрос блоков из базы данных */
@@ -305,7 +306,7 @@
 			$query = "SELECT * FROM `files` WHERE `id` = '$file_id'";
 			$data1 = database_query($query);
 			if ($file = mysql_fetch_assoc($data1)) {
-				$data[] = array('src' => 'uploads/'.$file['file'], 'caption' => $file['caption']);
+				$data[] = array('src' => 'uploads/'.$file['file'], 'caption' => $file['caption'], 'size' => widget_size($file['size']));
 			}
 		}
 		return $data;

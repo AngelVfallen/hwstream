@@ -144,7 +144,7 @@ function makeLessonElement(lesson) {
 		/* Если лента комментариев содержит что-то важное - стоит сделать посветку */
 		if (important) $(element).addClass('important');
 	}
-	else if (user.perms != 'guest') { // Кроме гостей все могут добавлять контент
+	else if (user.logged && (user.perms != 'guest')) { // Кроме гостей все могут добавлять контент
 		$(element).append('<div class="comments write">Добавить</div>');
 	}
 	return element;
@@ -154,13 +154,16 @@ function makeLessonElement(lesson) {
 function makeCommentElement(block, lesson, comment) {
 	var element = $('<div class="comment" data-id="'+comment.id+'"><div class="avatar"><img src="'+comment.author.avatar+'" title="'+comment.author.name+'" alt="'+comment.author.name+'"></div><div class="content"><p class="name">'+comment.author.name+'<span class="added">'+comment.added+'</span></p><p class="text">'+comment.content+'</p><ul class="attachments"></ul><p class="controls"></p></div><div class="clearfix"></div></div>');
 	
+	/* Подсветить важный комментарий */
+	if (comment.important == '1') $(element).addClass('important');
+
 	/* Если это комментарий пользователя, то он может его удалить */
 	if (comment.author.vk_id == user.vk_id) {
 		var delete_button = $('<a href="#" class="delete red" title="Удалить комментарий">Удалить</a>');
 		$(delete_button).click(function() { deleteComment(block, lesson, comment); });
 		$(element).find('.controls').append(delete_button);
 	}
-	else if (user.logged) { // А на чужие комментарии можно ответить
+	else if (user.logged && (user.perms != 'guest')) { // А на чужие комментарии можно ответить
 		var answer_button = $('<a href="#" class="answer" title="Ответить пользователю">Ответить</a>');
 		$(answer_button).click(function() {
 			$('#comments #form #text textarea').val($('#comments #form #text textarea').val()+comment.author.name+', ');
@@ -169,7 +172,7 @@ function makeCommentElement(block, lesson, comment) {
 	}
 
 	comment.attachments.forEach(function(attached) { // Прикреплённые файлы
-		$(element).find('.attachments').append('<li><a href="'+attached.src+'" target="_blank" title="Загрузить файл">'+attached.caption+'</a></li>');
+		$(element).find('.attachments').append('<li><a href="'+attached.src+'" target="_blank" title="Загрузить файл">'+attached.caption+'</a> <span class="filesize">('+attached.size+')</span></li>');
 	});
 	return element;
 }
@@ -205,11 +208,13 @@ function loadStep(direction) {
 
 /* Включение поддержки кнопки обсуждения */
 function activateCommentsViewer(block) {
-	block.data.forEach(function(lesson) {
-		$(block.element).find('.lesson.l'+lesson.queue+' .comments').unbind('click').click(function() {
-			if (!display.busy) openCommentsViewer(block, lesson);
+	if (block.data) {
+		block.data.forEach(function(lesson) {
+			$(block.element).find('.lesson.l'+lesson.queue+' .comments').unbind('click').click(function() {
+				if (!display.busy) openCommentsViewer(block, lesson);
+			});
 		});
-	});
+	}
 }
 
 /* Просмотр комментариев */
@@ -224,7 +229,7 @@ function openCommentsViewer(block, lesson) {
 	}
 
 	/* Есть пользователь залогинен - он может добавлять контент */
-	if (user.logged) $(wrapper).append(makeCommentForm(block, lesson));
+	if (user.logged && (user.perms != 'guest')) $(wrapper).append(makeCommentForm(block, lesson));
 
 	/* Открыть виджет lightbox c нашими данными */
 	lightbox.show(wrapper);
@@ -302,17 +307,15 @@ function initAnimate() {
 	/* Отображаем все блоки из дисплея */
 	display.blocks.forEach(function(block) {
 		var element = makeBlockElement(block);
-    	$('#display').append(element);
+		$('#display').append(element);
 
-    	/* Передаём ссылку на элемент в дисплей */
-    	block.element = element;
+		/* Передаём ссылку на элемент в дисплей */
+		block.element = element;
+		activateCommentsViewer(block);
 
-    	/* Включаем комментирование в блоке */
-    	activateCommentsViewer(block);
-
-    	/* Анимация появления блока */
-    	$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
-    		animate({ 'opacity': 1, 'left': (display.margin_left+((display.block_width+display.block_margin)*block.queue))+'px' }, 500);
+		/* Анимация появления блока */
+		$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
+			animate({ 'opacity': 1, 'left': (display.margin_left+((display.block_width+display.block_margin)*block.queue))+'px' }, 500);
 	});
 }
 
@@ -326,6 +329,7 @@ function stepAnimate(direction) {
 			css({ 'opacity': '1', 'left': (display.margin_left+((display.block_width+display.block_margin)*((block.queue*1)+1)))+'px' });
 		$('#display').append(element);
 		block.element = element;
+		activateCommentsViewer(block);
 	}
 	else if (direction == 'prev') { // Шаг назад
 		var block = display.blocks[0];
@@ -333,6 +337,7 @@ function stepAnimate(direction) {
 			css({ 'opacity': '1', 'left': (display.margin_left+((display.block_width+display.block_margin)*((block.queue*1)-1)))+'px' });
 		$('#display').prepend(element);
 		block.element = element;
+		activateCommentsViewer(block);
 	}
 
 	/* Общая анимация скольжения в заданную сторону */
@@ -403,14 +408,15 @@ function addAnimate(start) {
 	for (var i = start; i < display.blocks.length; i++) {
 		var block = display.blocks[i];
 		var element = makeBlockElement(block);
-    	$('#display').append(element);
+		$('#display').append(element);
 
-    	/* Передаём ссылку на элемент в дисплей */
-    	block.element = element;
+		/* Передаём ссылку на элемент в дисплей */
+		block.element = element;
+		activateCommentsViewer(block);
 
-    	/* Анимация добавления блока */
-    	$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
-    		animate({ 'opacity': 1, 'left': (display.margin_left+((display.block_width+display.block_margin)*block.queue))+'px' }, 500);
+		/* Анимация добавления блока */
+		$(element).css({ 'opacity': 0, 'left': (display.margin_left+((display.block_width+display.block_margin)*(block.queue+0.2)*display.init_jump))+'px' }).
+			animate({ 'opacity': 1, 'left': (display.margin_left+((display.block_width+display.block_margin)*block.queue))+'px' }, 500);
 	}
 }
 

@@ -70,6 +70,7 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 #comments .comment .content { margin-left: 63px; position: relative; }
 #comments .comment .content .name { border-bottom: 1px solid #ccc; color: #000; font: bold 12px "Arial"; line-height: 16px; margin-bottom: 3px; padding-bottom: 2px; }
 #comments .comment .content .added { color: #999; font: 11px "Arial"; line-height: 16px; position: absolute; right: 6px; top: 0; }
+#comments .comment.important .content .added { font-weight: bold !important; }
 #comments .comment .content .text { color: #333; font: 13px "Arial"; margin: 4px 0 8px; }
 #comments .comment .content .attachments { list-style: none; }
 #comments .comment .content .attachments LI { height: 18px; margin-bottom: 5px; }
@@ -112,10 +113,10 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 #widget_wrapper #library { background: #fff; }
 #widget_wrapper #library .tags { font: 13px "Arial"; }
 #widget_wrapper #library .tags .button { font: 13px "Arial"; margin-left: 6px; padding: 3px 12px; }
-#widget_wrapper #library #annotation { padding: 15px 15px 0; }
+#widget_wrapper #library #annotation { padding: 15px 15px 5px; }
 #widget_wrapper #library #annotation P { font: 12px "Arial"; margin-bottom: 8px; }
 #widget_wrapper #library #content { padding: 15px; }
-#widget_wrapper #library #content .item { border-left: 3px solid #ccc; margin-top: 5px; padding-left: 8px; }
+#widget_wrapper #library #content .item { border-left: 3px solid #ccc; margin-bottom: 28px; padding-left: 8px; }
 #widget_wrapper #library #content .item .caption { border-bottom: 1px solid #ccc; color: #000; font: bold 12px "Arial"; line-height: 16px; margin-bottom: 3px; padding-bottom: 2px; position: relative; }
 #widget_wrapper #library #content .item .caption .added { color: #999; font: 11px "Arial"; line-height: 16px; position: absolute; right: 6px; top: 0; }
 #widget_wrapper #library #content .item .text { color: #333; font: 12px "Arial"; margin: 8px 0 5px; }
@@ -135,7 +136,7 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 #libform LABEL { color: #555; font: 13px "Arial"; margin: 0 0 1px 1px; }
 #libform .text { border: 1px solid #B1B1B1; -webkit-box-shadow: inset 0px 0px 0px 5px #F7F7F7; -moz-box-shadow: inset 0px 0px 0px 5px #F7F7F7; box-shadow: inset 0px 0px 0px 5px #F7F7F7; margin-bottom: 8px; padding: 5px; }
 #libform .text TEXTAREA { font: 12px "Arial"; height: 30px; resize: none; vertical-align: bottom; width: 100%; }
-#libform .text #tags { font: 12px "Arial"; width: 100%; }
+#libform .text INPUT { font: 12px "Arial"; width: 100%; }
 #libform #attached { font: 11px "Arial"; list-style: none; margin-bottom: 10px; }
 #libform #attached LI { line-height: 18px; height: 18px; margin-top: 3px; }
 #libform #attached LI.descr { border-left: 3px solid #C20000; color: #000; padding-left: 5px; }
@@ -147,3 +148,4 @@ HTML, BODY { background: #eee; background: -moz-radial-gradient(center, ellipse 
 #libform #controls { position: relative; height: 26px; }
 #libform #controls #attach { position: absolute; left: 8px; text-align: center; width: 145px; }
 #libform #controls #submit { position: absolute; right: 8px; text-align: center; width: 100px; }
+.filesize { font: 10px "Arial"; color: #999; }
